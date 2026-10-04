@@ -530,8 +530,22 @@ HitResult calc_enemy_damage_target(Actor* attacker) {
                         && attacker->transparentStatus != STATUS_KEY_TRANSPARENT
                         && !has_enchanted_part(attacker)
                     ) {
+                        // Reflect: a surviving attacker is not interrupted (no event is dispatched, so none of its hit-reaction
+                        // scripts run). A reflect that would defeat the attacker uses the normal, non-shock death event.
+                        s32 reflectDamage = SUPER_GUARD_REFLECT_DAMAGE;
+                        s32 lethalReflect = (attacker->curHP <= reflectDamage);
                         s32 savedAttackDamage = battleStatus->curAttackDamage;
-                        dispatch_damage_event_actor_1(attacker, SUPER_GUARD_REFLECT_DAMAGE, EVENT_SHOCK_HIT);
+
+                        if (lethalReflect) {
+                            // Subtracts the HP, shows the damage number and burst, and dispatches EVENT_DEATH.
+                            dispatch_damage_event_actor_1(attacker, reflectDamage, EVENT_HIT);
+                        } else {
+                            attacker->curHP -= reflectDamage;
+                            attacker->damageCounter += reflectDamage;
+                            show_next_damage_popup(state->goalPos.x, state->goalPos.y, state->goalPos.z, reflectDamage, 0);
+                            show_damage_fx(attacker, state->goalPos.x, state->goalPos.y, state->goalPos.z, reflectDamage);
+                            set_actor_flash_mode(attacker, 1);
+                        }
                         battleStatus->curAttackDamage = savedAttackDamage;
                     }
                     break;
