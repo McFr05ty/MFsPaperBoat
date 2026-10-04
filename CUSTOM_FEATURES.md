@@ -25,10 +25,10 @@ Settings: **Rare Enemies** (checkbox) and **Rare Enemy Spawn Chance** (slider, 0
 Settings: **Super Guard** (checkbox, off by default) and **Super Guard Timing** (slider, 1-5 frames, default 1).
 
 - Press B within the timing window before an enemy attack hits to take no damage. A B press in the frames just before the window counts as mashing and cancels it.
-- Direct attacks also reflect 1 damage back onto the attacker as a shock hit, with the usual shock animation and sound. Attacks flagged as ranged are only negated.
-- Bob-ombs survive the reflect unless Mario is electrified, in which case contact still defeats them as in the original game.
+- Direct attacks also reflect 1 damage back onto the attacker, shown as a damage number and star burst with a flash. Attacks flagged as ranged are only negated. A reflect never interrupts an attacker that survives it. If it would defeat the attacker, the attacker is defeated through its normal death sequence. No shock effect or sound is used.
+- The reflect no longer dispatches a shock event, so Bob-ombs are only defeated by it if it reduces them to 0 HP.
 - Mario only. Status effects that an attack inflicts are not specially handled and have not been tested.
-- The reflect interrupts the attacker, so enemy scripts that were not written for it can behave oddly. Not every enemy has been tested.
+- An earlier version of the reflect used a shock hit and could crash the game in some battles because the battle script memory ran out. The current version avoids that, but not every enemy has been tested.
 
 ## Tuning
 
@@ -36,8 +36,8 @@ Rare enemy constants (spawn default, shimmer strength and speed, rare bonuses, s
 
 ## Testing status
 
-- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands.
-- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; the Bob-omb exception for the Super Guard reflect.
+- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build.
+- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect.
 
 ## Building
 
