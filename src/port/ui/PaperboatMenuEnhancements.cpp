@@ -118,6 +118,20 @@ void PaperboatMenu::AddMenuEnhancements() {
                 "Direct attacks also reflect 1 damage back onto the attacker. Mario only."
             )
         );
+
+    AddWidget(path, "Super Guard Timing", WIDGET_CVAR_SLIDER_INT)
+        .CVar(CVAR_SUPER_GUARD_WINDOW)
+        .Options(
+            IntSliderOptions()
+                .Tooltip(
+                    "How many frames a B press can land before an enemy attack hits and still count as a Super Guard. "
+                    "1 is frame perfect. Requires Super Guard to be enabled."
+                )
+                .Min(1)
+                .Max(5)
+                .DefaultValue(SUPER_GUARD_WINDOW)
+                .Format("%d frames")
+        );
 		
     AddWidget(path, "Rare Enemies", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_RARE_ENEMIES)

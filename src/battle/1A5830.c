@@ -7,7 +7,6 @@
 #include "super_guard.h"
 #include "rare_enemy.h"
 #include <stdio.h>
-#define HM_LOG(...) do { FILE* hmf = fopen("hardmode_log.txt", "a"); if (hmf) { fprintf(hmf, __VA_ARGS__); fclose(hmf); } } while (0)
 #include <libultraship/bridge/consolevariablebridge.h>
 
 s32 has_enchanted_part(Actor* actor) {
@@ -241,13 +240,21 @@ static b32 check_super_guard_input(void) {
     s32 pos;
     s32 i;
     b32 pressed = false;
+    s32 sgWindow = CVarGetInteger(CVAR_SUPER_GUARD_WINDOW, SUPER_GUARD_WINDOW);
+
+    if (sgWindow < 1) {
+        sgWindow = 1;
+    }
+    if (sgWindow > 5) {
+        sgWindow = 5;
+    }
 
     // Was B pressed within the Super Guard window?
-    pos = battleStatus->inputBufferPos - SUPER_GUARD_WINDOW;
+    pos = battleStatus->inputBufferPos - sgWindow;
     if (pos < 0) {
         pos += size;
     }
-    for (i = 0; i < SUPER_GUARD_WINDOW; i++) {
+    for (i = 0; i < sgWindow; i++) {
         if (pos >= size) {
             pos -= size;
         }
@@ -262,7 +269,7 @@ static b32 check_super_guard_input(void) {
     }
 
     // A B press just before the window counts as mashing and cancels it.
-    pos = battleStatus->inputBufferPos - (SUPER_GUARD_WINDOW + SUPER_GUARD_MASH_FRAMES);
+    pos = battleStatus->inputBufferPos - (sgWindow + SUPER_GUARD_MASH_FRAMES);
     if (pos < 0) {
         pos += size;
     }
@@ -277,11 +284,11 @@ static b32 check_super_guard_input(void) {
     }
 
     // Use up these B presses so one press cannot trigger twice.
-    pos = battleStatus->inputBufferPos - (SUPER_GUARD_WINDOW + SUPER_GUARD_MASH_FRAMES);
+    pos = battleStatus->inputBufferPos - (sgWindow + SUPER_GUARD_MASH_FRAMES);
     if (pos < 0) {
         pos += size;
     }
-    for (i = 0; i < SUPER_GUARD_WINDOW + SUPER_GUARD_MASH_FRAMES; i++) {
+    for (i = 0; i < sgWindow + SUPER_GUARD_MASH_FRAMES; i++) {
         if (pos >= size) {
             pos -= size;
         }
@@ -567,7 +574,6 @@ HitResult calc_enemy_damage_target(Actor* attacker) {
         cancel_action_rating_combo(target);
     }
 
-    HM_LOG("check: attacker=%d baseAttack=%d damageNow=%d hard=%d\n", (int)attacker->actorID, (int)gBattleStatus.curAttackDamage, (int)damage, (int)CVarGetInteger(CVAR_HARD_MODE, 0));
     // Hard Mode: enemies deal 1.5x attack damage to Mario (rounded up), applied after
     // defense and blocking so a block cannot cancel it. Status effects are untouched.
     if (actorClass != ACTOR_CLASS_ENEMY && damage > 0 && CVarGetInteger(CVAR_HARD_MODE, 0)) {
@@ -577,7 +583,6 @@ HitResult calc_enemy_damage_target(Actor* attacker) {
         }
     }
 
-    HM_LOG("final: damage=%d\n", (int)damage);
     // deal damage and determine resulting battle event
 
     event = EVENT_HIT_COMBO;

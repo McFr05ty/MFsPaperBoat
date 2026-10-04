@@ -6,6 +6,8 @@
 
 // Setting name for the Super Guard checkbox (off by default).
 #define CVAR_SUPER_GUARD CVAR_ENHANCEMENT("SuperGuard")
+// Setting name for the Super Guard timing slider (1-5 frames). SUPER_GUARD_WINDOW is its default.
+#define CVAR_SUPER_GUARD_WINDOW CVAR_ENHANCEMENT("SuperGuardWindow")
 
 // Super Guard: pressing B on the exact frame an enemy attack hits negates all damage.
 
