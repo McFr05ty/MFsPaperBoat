@@ -1,6 +1,8 @@
 #include "battle/battle.h"
 #include "script_api/battle.h"
 #include "effects.h"
+#include "npc.h"
+#include "rare_enemy.h"
 
 s32 dispatch_damage_event_partner_1(s32, s32);
 
@@ -385,6 +387,9 @@ HitResult calc_partner_damage_enemy(void) {
 
         if (!(battleStatus->curAttackElement & DAMAGE_TYPE_IGNORE_DEFENSE)) {
             statusChanceOrDefense += target->defenseBoost;
+            if (RARE_FIGHT_ACTIVE() && battleStatus->curAttackDamage > statusChanceOrDefense + RARE_DEFENSE_BONUS) {
+                statusChanceOrDefense += RARE_DEFENSE_BONUS;
+            }
         }
 
         damageDealt = battleStatus->curAttackDamage + partner->attackBoost;

@@ -1,4 +1,7 @@
 #include "PaperboatMenu.h"
+#include "hard_mode.h"
+#include "super_guard.h"
+#include "rare_enemy.h"
 
 namespace PaperboatGui {
 
@@ -97,6 +100,45 @@ void PaperboatMenu::AddMenuEnhancements() {
                     "wider overrides the Dodge Master badge."
                 )
                 .ComboMap(blockWindowOptions)
+        );
+    AddWidget(path, "Hard Mode", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_HARD_MODE)
+        .Options(
+            CheckboxOptions().Tooltip(
+                "Enemies have double health and deal 1.5x attack damage (rounded up). "
+                "Status effects are not changed. Toggle before entering a battle."
+            )
+        );
+
+    AddWidget(path, "Super Guard", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_SUPER_GUARD)
+        .Options(
+            CheckboxOptions().Tooltip(
+                "Press B on the exact frame an enemy attack hits to negate all of its damage. "
+                "Direct attacks also reflect 1 damage back onto the attacker. Mario only."
+            )
+        );
+		
+    AddWidget(path, "Rare Enemies", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_RARE_ENEMIES)
+        .Options(
+            CheckboxOptions().Tooltip(
+                "Some overworld enemies appear as rare versions. Takes effect the next time a map loads."
+            )
+        );
+
+    AddWidget(path, "Rare Enemy Spawn Chance", WIDGET_CVAR_SLIDER_INT)
+        .CVar(CVAR_RARE_CHANCE)
+        .Options(
+            IntSliderOptions()
+                .Tooltip(
+                    "Chance that each hostile overworld enemy spawns as a rare version. Requires Rare Enemies to be enabled. "
+                    "Takes effect the next time a map loads."
+                )
+                .Min(0)
+                .Max(100)
+                .DefaultValue(RARE_ENEMY_CHANCE_PERCENT)
+                .Format("%d%%")
         );
 
     // Enhancements > Graphics

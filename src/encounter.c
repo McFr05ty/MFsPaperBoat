@@ -9,6 +9,7 @@
 #include "sprite/player.h"
 #include "model.h"
 #include "port/Engine.h"
+#include "rare_enemy.h"
 
 API_CALLABLE(ShowMerleeCoinMessage);
 API_CALLABLE(ShowMerleeRanOutMessage);
@@ -2546,6 +2547,7 @@ void create_encounters(void) {
                         enemy->drops = &DefaultEnemyDrops;
                     }
                     enemy->encountered = 0;
+                    enemy->isRare = false;
                     if ((uintptr_t) npcData->init > 0x10000) {
                         enemy->initBytecode = npcData->init;
                     } else {
@@ -2584,6 +2586,10 @@ void create_encounters(void) {
 
                     enemy->flags = npcSettings->flags;
                     enemy->flags |= npcData->flags;
+                    // Rare Enemies: only hostile enemies can roll rare (not Toads, shopkeepers, and so on).
+                    if (!(enemy->flags & ENEMY_FLAG_PASSIVE) && CVarGetInteger(CVAR_RARE_ENEMIES, 0) && rand_int(99) < CVarGetInteger(CVAR_RARE_CHANCE, RARE_ENEMY_CHANCE_PERCENT)) {
+                        enemy->isRare = true;
+                    }
                     enemy->unk_64 = nullptr;
                     enemy->tattleMsg = npcData->tattle;
                     if (npcData->initVarCount != 0) {

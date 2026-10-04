@@ -2,6 +2,7 @@
 #include "vars_access.h"
 #include "npc.h"
 #include "effects.h"
+#include "rare_enemy.h"
 
 extern s32 gLastRenderTaskCount;
 
@@ -45,6 +46,22 @@ void spawn_drops(Enemy* enemy) {
 
     angleMult = 0;
     pickupDelay = 0;
+
+    // Rare Enemies: one extra high-grade item (weighted toward the cheaper ones).
+    if (enemy->isRare && CVarGetInteger(CVAR_RARE_ENEMIES, 0)) {
+        static const s32 rareDropPool[] = {
+            ITEM_SUPER_SHROOM, ITEM_SUPER_SHROOM, ITEM_SUPER_SHROOM,
+            ITEM_MAPLE_SYRUP, ITEM_MAPLE_SYRUP,
+            ITEM_ULTRA_SHROOM, ITEM_ULTRA_SHROOM,
+            ITEM_LIFE_SHROOM
+        };
+        s32 rareItem = rareDropPool[rand_int(ARRAY_COUNT(rareDropPool) - 1)];
+
+        make_item_entity(rareItem, x, y, z, ITEM_SPAWN_MODE_BATTLE_REWARD, pickupDelay, angle + angleMult * 360, 0);
+        spawnCounter++;
+        pickupDelay += 2;
+        angle += 30.0;
+    }
 
     // try dropping items
 

@@ -3,6 +3,12 @@
 #include "effects.h"
 #include "hud_element.h"
 #include "sprite.h"
+#include "hard_mode.h"
+#include "super_guard.h"
+#include "rare_enemy.h"
+#include <stdio.h>
+#define HM_LOG(...) do { FILE* hmf = fopen("hardmode_log.txt", "a"); if (hmf) { fprintf(hmf, __VA_ARGS__); fclose(hmf); } } while (0)
+#include <libultraship/bridge/consolevariablebridge.h>
 
 s32 has_enchanted_part(Actor* actor) {
     ActorPart* partIt = actor->partsTable;
@@ -228,6 +234,64 @@ HitResult calc_enemy_test_target(Actor* actor) {
     return HIT_RESULT_HIT;
 }
 
+// Super Guard: true if B was pressed on the exact frame of the hit and was not being mashed.
+static b32 check_super_guard_input(void) {
+    BattleStatus* battleStatus = &gBattleStatus;
+    s32 size = ARRAY_COUNT(battleStatus->pushInputBuffer);
+    s32 pos;
+    s32 i;
+    b32 pressed = false;
+
+    // Was B pressed within the Super Guard window?
+    pos = battleStatus->inputBufferPos - SUPER_GUARD_WINDOW;
+    if (pos < 0) {
+        pos += size;
+    }
+    for (i = 0; i < SUPER_GUARD_WINDOW; i++) {
+        if (pos >= size) {
+            pos -= size;
+        }
+        if (battleStatus->pushInputBuffer[pos] & BUTTON_B) {
+            pressed = true;
+            break;
+        }
+        pos++;
+    }
+    if (!pressed) {
+        return false;
+    }
+
+    // A B press just before the window counts as mashing and cancels it.
+    pos = battleStatus->inputBufferPos - (SUPER_GUARD_WINDOW + SUPER_GUARD_MASH_FRAMES);
+    if (pos < 0) {
+        pos += size;
+    }
+    for (i = 0; i < SUPER_GUARD_MASH_FRAMES; i++) {
+        if (pos >= size) {
+            pos -= size;
+        }
+        if (battleStatus->pushInputBuffer[pos] & BUTTON_B) {
+            return false;
+        }
+        pos++;
+    }
+
+    // Use up these B presses so one press cannot trigger twice.
+    pos = battleStatus->inputBufferPos - (SUPER_GUARD_WINDOW + SUPER_GUARD_MASH_FRAMES);
+    if (pos < 0) {
+        pos += size;
+    }
+    for (i = 0; i < SUPER_GUARD_WINDOW + SUPER_GUARD_MASH_FRAMES; i++) {
+        if (pos >= size) {
+            pos -= size;
+        }
+        battleStatus->pushInputBuffer[pos] &= ~BUTTON_B;
+        pos++;
+    }
+
+    return true;
+}
+
 HitResult calc_enemy_damage_target(Actor* attacker) {
     BattleStatus* battleStatus = &gBattleStatus;
     ActorState* state = &attacker->state;
@@ -383,6 +447,11 @@ HitResult calc_enemy_damage_target(Actor* attacker) {
 
     damage += attacker->attackBoost;
 
+    // Rare Enemies: rare enemies hit harder (only attacks that already deal damage).
+    if (actorClass != ACTOR_CLASS_ENEMY && battleStatus->curAttackDamage > 0 && RARE_FIGHT_ACTIVE()) {
+        damage += RARE_ATTACK_BONUS;
+    }
+
     if (attacker->chillOutTurns != 0) {
         damage -= attacker->chillOutAmount;
     }
@@ -392,7 +461,7 @@ HitResult calc_enemy_damage_target(Actor* attacker) {
             damage /= 2;
         }
     }
-
+	
     if (damage > 99) {
         damage = 99;
     }
@@ -435,6 +504,32 @@ HitResult calc_enemy_damage_target(Actor* attacker) {
             ) {
                 s32 blocked;
 
+                // Super Guard: B on the exact frame of the hit negates all damage.
+                if (damage > 0
+                    && CVarGetInteger(CVAR_SUPER_GUARD, 0)
+                    && battleStatus->actionCommandMode != AC_MODE_NOT_LEARNED
+                    && !(gGameStatusPtr->demoBattleFlags & DEMO_BTL_FLAG_ENABLED)
+                    && check_super_guard_input()
+                ) {
+                    damage = 0;
+                    battleStatus->blockResult = BLOCK_RESULT_SUCCESS;
+                    sfx_play_sound_at_position(SOUND_DAMAGE_STARS, SOUND_SPACE_DEFAULT, state->goalPos.x, state->goalPos.y, state->goalPos.z);
+                    show_action_rating(ACTION_RATING_SUPER, target, state->goalPos.x, state->goalPos.y, state->goalPos.z);
+                    gBattleStatus.flags1 |= BS_FLAGS1_ATK_BLOCKED;
+
+                    // Direct attacks also reflect damage back onto the attacker (same conditions as shock contact).
+                    if (SUPER_GUARD_REFLECT_DAMAGE > 0
+                        && !(battleStatus->curAttackElement & DAMAGE_TYPE_NO_CONTACT)
+                        && attacker->transparentStatus != STATUS_KEY_TRANSPARENT
+                        && !has_enchanted_part(attacker)
+                    ) {
+                        s32 savedAttackDamage = battleStatus->curAttackDamage;
+                        dispatch_damage_event_actor_1(attacker, SUPER_GUARD_REFLECT_DAMAGE, EVENT_SHOCK_HIT);
+                        battleStatus->curAttackDamage = savedAttackDamage;
+                    }
+                    break;
+                }
+
                 if (player_team_is_ability_active(target, ABILITY_BERSERKER)) {
                     blocked = rand_int(1);
                 } else {
@@ -472,6 +567,17 @@ HitResult calc_enemy_damage_target(Actor* attacker) {
         cancel_action_rating_combo(target);
     }
 
+    HM_LOG("check: attacker=%d baseAttack=%d damageNow=%d hard=%d\n", (int)attacker->actorID, (int)gBattleStatus.curAttackDamage, (int)damage, (int)CVarGetInteger(CVAR_HARD_MODE, 0));
+    // Hard Mode: enemies deal 1.5x attack damage to Mario (rounded up), applied after
+    // defense and blocking so a block cannot cancel it. Status effects are untouched.
+    if (actorClass != ACTOR_CLASS_ENEMY && damage > 0 && CVarGetInteger(CVAR_HARD_MODE, 0)) {
+        damage = (damage * 3 + 1) / 2;
+        if (damage > 99) {
+            damage = 99;
+        }
+    }
+
+    HM_LOG("final: damage=%d\n", (int)damage);
     // deal damage and determine resulting battle event
 
     event = EVENT_HIT_COMBO;
@@ -2745,6 +2851,24 @@ API_CALLABLE(DropStarPoints) {
 
         // Double rewards cheat
         CALL_EVENT(OnStarPointDrop, &numToDrop);
+
+        // Rare Enemies: bonus star points for fights started by a rare overworld enemy.
+        if (gCurrentEncounter.curEnemy != nullptr && gCurrentEncounter.curEnemy->isRare
+            && CVarGetInteger(CVAR_RARE_ENEMIES, 0)) {
+            s32 rareRoom = 100 - battleStatus->totalStarPoints - battleStatus->pendingStarPoints;
+            s32 rareDoubled = numToDrop * RARE_STAR_POINT_MULTIPLIER;
+            s32 rareMinimum = numToDrop + RARE_STAR_POINT_MINIMUM_BONUS;
+            numToDrop = (rareDoubled > rareMinimum) ? rareDoubled : rareMinimum;
+            if (numToDrop < RARE_STAR_POINT_FLOOR) {
+                numToDrop = RARE_STAR_POINT_FLOOR;
+            }
+            if (numToDrop > rareRoom) {
+                numToDrop = rareRoom;
+            }
+            if (numToDrop < 0) {
+                numToDrop = 0;
+            }
+        }
 
         battleStatus->pendingStarPoints += numToDrop;
     }

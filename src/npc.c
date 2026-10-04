@@ -6,6 +6,7 @@
 #include "world/partners.h"
 #include "sprite/npc/WorldWatt.h"
 #include "port/patches/Patches.h"
+#include "rare_enemy.h"
 
 s16 gNpcCount;
 static NpcList gWorldNpcList;
@@ -1320,12 +1321,187 @@ void npc_draw_with_palswap(Npc* npc, s32 yaw, Matrix4f mtx) {
     }
 }
 
+// ---- Rare Enemies: holographic look for overworld enemies ----
+static void rare_rainbow(s32 hue, s32* outR, s32* outG, s32* outB) {
+    s32 seg = hue / 128;
+    s32 f = (hue % 128) * 2;
+
+    switch (seg) {
+        case 0: *outR = 255;     *outG = f;       *outB = 0;       break;
+        case 1: *outR = 255 - f; *outG = 255;     *outB = 0;       break;
+        case 2: *outR = 0;       *outG = 255;     *outB = f;       break;
+        case 3: *outR = 0;       *outG = 255 - f; *outB = 255;     break;
+        case 4: *outR = f;       *outG = 0;       *outB = 255;     break;
+        default: *outR = 255;    *outG = 0;       *outB = 255 - f; break;
+    }
+}
+
+static u16 rare_holo_color(u16 color, s32 hue) {
+    s32 r = UNPACK_PAL_R(color);
+    s32 g = UNPACK_PAL_G(color);
+    s32 b = UNPACK_PAL_B(color);
+    s32 a = UNPACK_PAL_A(color);
+    s32 v = r;
+    s32 rr, rg, rb;
+    s32 k = RARE_HOLO_STRENGTH;
+
+    if (g > v) {
+        v = g;
+    }
+    if (b > v) {
+        v = b;
+    }
+
+    // Rainbow color scaled to the original brightness, so dark outlines stay dark.
+    // (Channels are 5-bit, 0-31; the rainbow is 0-255, so scaling by v/255 lands in 0-31.)
+    rare_rainbow(hue, &rr, &rg, &rb);
+    rr = (rr * v) / 255;
+    rg = (rg * v) / 255;
+    rb = (rb * v) / 255;
+
+    r = (r * (100 - k) + rr * k) / 100;
+    g = (g * (100 - k) + rg * k) / 100;
+    b = (b * (100 - k) + rb * k) / 100;
+
+    return PACK_PAL_RGBA(r, g, b, a);
+}
+
+// Draws a rare overworld enemy with recolored palettes. Returns false if this NPC is not rare
+// (or anything looks unsafe), so the normal drawing code runs instead.
+static b32 rare_npc_try_draw(Npc* npc, s32 yaw, Matrix4f mtx) {
+    PAL_PTR* originals;
+    PAL_PTR src;
+    PAL_PTR dst;
+    Enemy* enemy;
+    s32 count = 0;
+    s32 i, j;
+    s32 alpha;
+    s32 time;
+    u32 mask;
+
+    if (!CVarGetInteger(CVAR_RARE_ENEMIES, 0) || (npc->flags & NPC_FLAG_NO_ANIMS_LOADED)) {
+        return false;
+    }
+
+    enemy = get_enemy_safe(npc->npcID);
+    if (enemy == nullptr || !enemy->isRare) {
+        return false;
+    }
+
+    originals = spr_get_npc_palettes(npc->curAnim >> 16);
+    if (originals == nullptr) {
+        return false;
+    }
+    while (count < 16 && (intptr_t) originals[count] != -1) {
+        count++;
+    }
+    if (count == 0) {
+        return false;
+    }
+
+    time = (s32) ((gGameStatusPtr->frameCounter * RARE_HOLO_SPEED) % 768);
+    for (i = 0; i < count; i++) {
+        src = port_sprite_palette_data(originals[i]);
+        if (src == nullptr) {
+            return false;
+        }
+        dst = npc->copiedPalettes[i];
+        for (j = 0; j < SPR_PAL_SIZE; j++) {
+            dst[j] = rare_holo_color(src[j], (time + i * 100 + j * RARE_HOLO_SPREAD) % 768);
+        }
+        npc->adjustedPalettes[i] = dst;
+    }
+
+    alpha = npc->alpha * npc->hideAlpha / 255;
+    mask = DRAW_SPRITE_OVERRIDE_PALETTES;
+    if (alpha < 255) {
+        mask |= DRAW_SPRITE_OVERRIDE_ALPHA;
+    }
+    spr_draw_npc_sprite(npc->spriteInstanceID | mask, yaw, alpha, npc->adjustedPalettes, mtx);
+    return true;
+}
+
+// Rare Enemies: holographic look for enemies in a rare fight (battle screen).
+// Returns false if the normal drawing code should run instead.
+b32 rare_battle_try_draw(ActorPart* part, s32 yaw, Matrix4f mtx) {
+    DecorationTable* decorations;
+    PAL_PTR* originals;
+    PAL_PTR src;
+    PAL_PTR dst;
+    s32 count = 0;
+    s32 i, j;
+    s32 opacity = 255;
+    s32 time;
+    u32 mask = DRAW_SPRITE_OVERRIDE_PALETTES;
+
+    if (!CVarGetInteger(CVAR_RARE_ENEMIES, 0) || gCurrentEncounter.scriptedBattle) {
+        return false;
+    }
+    if (gCurrentEncounter.curEnemy == nullptr || !gCurrentEncounter.curEnemy->isRare) {
+        return false;
+    }
+
+    decorations = part->decorationTable;
+    if (decorations == nullptr || (part->flags & ACTOR_PART_FLAG_NO_DECORATIONS)) {
+        return false;
+    }
+
+    // Leave status effects, hit flashes and glows alone so they still show.
+    if (decorations->paletteAdjustment != ACTOR_PAL_ADJUST_NONE
+        || decorations->flashEnabled != FLASH_PAL_OFF
+        || decorations->glowState != GLOW_PAL_OFF) {
+        return false;
+    }
+
+    originals = spr_get_npc_palettes(part->curAnimation >> 16);
+    if (originals == nullptr) {
+        return false;
+    }
+    while (count < ARRAY_COUNT(decorations->adjustedPalettes) && (intptr_t) originals[count] != -1) {
+        count++;
+    }
+    if (count == 0) {
+        return false;
+    }
+
+    time = (s32) ((gGameStatusPtr->frameCounter * RARE_HOLO_SPEED) % 768);
+    for (i = 0; i < count; i++) {
+        src = port_sprite_palette_data(originals[i]);
+        if (src == nullptr) {
+            return false;
+        }
+        dst = decorations->copiedPalettes[0][i];
+        for (j = 0; j < SPR_PAL_SIZE; j++) {
+            dst[j] = rare_holo_color(src[j], (time + i * 100 + j * RARE_HOLO_SPREAD) % 768);
+        }
+    }
+    // Only point the part at the new palettes once every one of them was built.
+    for (i = 0; i < count; i++) {
+        decorations->adjustedPalettes[i] = decorations->copiedPalettes[0][i];
+    }
+
+    if (part->opacity < 255) {
+        mask |= DRAW_SPRITE_OVERRIDE_ALPHA;
+        opacity = part->opacity;
+    }
+    if (part->flags & ACTOR_PART_FLAG_TRANSPARENT) {
+        mask |= DRAW_SPRITE_OVERRIDE_ALPHA;
+        opacity = opacity * 120 / 255;
+    }
+    spr_draw_npc_sprite(part->spriteInstanceID | mask, yaw, opacity, decorations->adjustedPalettes, mtx);
+    return true;
+}
+
 void npc_render_without_adjusted_palettes(Npc* npc, s32 arg1, Matrix4f mtx) {
     if (npc->resetPalAdjust != 0) {
         npc->verticalStretch = 1.0f;
         npc->screenSpaceOffset2D[0] = 0.0f;
         npc->screenSpaceOffset2D[1] = 0.0f;
         npc->resetPalAdjust = 0;
+    }
+
+    if (rare_npc_try_draw(npc, arg1, mtx)) {
+        return;
     }
 
     if (!(npc->flags & NPC_FLAG_NO_ANIMS_LOADED)) {

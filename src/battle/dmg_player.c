@@ -3,6 +3,8 @@
 #include "battle/battle.h"
 #include "script_api/battle.h"
 #include "sprite/player.h"
+#include "npc.h"
+#include "rare_enemy.h"
 
 b32 dispatch_damage_event_player(s32 damageAmount, s32 event, b32 noHitSound);
 b32 dispatch_hazard_event_player(s32 damageAmount, s32 event);
@@ -444,6 +446,9 @@ HitResult calc_player_damage_enemy(void) {
 
         if (!(battleStatus->curAttackElement & DAMAGE_TYPE_IGNORE_DEFENSE)) {
             targetDefense += target->defenseBoost;
+            if (RARE_FIGHT_ACTIVE() && battleStatus->curAttackDamage > targetDefense + RARE_DEFENSE_BONUS) {
+                targetDefense += RARE_DEFENSE_BONUS;
+            }
         }
 
         if (targetPart->eventFlags & ACTOR_EVENT_FLAG_EXTREME_DEFENSE) {

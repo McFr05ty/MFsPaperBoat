@@ -605,6 +605,7 @@ if(MSVC)
             /permissive-
             /clang:-Wno-implicit-function-declaration
             /clang:-Wno-int-conversion
+            /clang:-Wno-incompatible-pointer-types
             /clang:-Wno-narrowing
             /clang:-fcommon
             /MP

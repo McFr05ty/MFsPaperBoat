@@ -126,6 +126,7 @@ s16 SparkleSpawnIntervals[] = { -1, 15, 10, 7, 5, 3, 2, 1 };
 
 void update_player_actor_shadow(void);
 void appendGfx_npc_actor(s32 isPartner, s32 actorIndex);
+b32 rare_battle_try_draw(ActorPart* part, s32 yaw, Matrix4f mtx);
 
 void create_status_chill_out(s32 iconID);
 void enable_status_static(s32 iconID);
@@ -1234,7 +1235,9 @@ void appendGfx_npc_actor(b32 isPartner, s32 actorIndex) {
             if (!isPartner) {
                 update_part_glow(true, part, partYaw, false);
                 update_part_flash(true, part, partYaw, false);
-                render_with_adjusted_palettes(SPRITE_MODE_NPC, part, partYaw, mtxTransform, 0);
+                if (!rare_battle_try_draw(part, partYaw, mtxTransform)) {
+                    render_with_adjusted_palettes(SPRITE_MODE_NPC, part, partYaw, mtxTransform, 0);
+                }
             } else {
                 update_part_glow(true, part, clamp_angle(180.0f - partYaw), false);
                 update_part_flash(true, part, clamp_angle(180.0f - partYaw), false);

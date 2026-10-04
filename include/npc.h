@@ -348,6 +348,7 @@ typedef struct Enemy {
     /* 0xDC */ s32 unk_DC;
     /* 0xE0 */ s16 savedNpcYaw;
     /* 0xE2 */ char unk_E2[6];
+    s8 isRare; // Rare Enemies: set when this overworld enemy rolled rare
 } Enemy; // size = 0xE8
 
 typedef struct Encounter {

@@ -1,6 +1,8 @@
 #include "battle/battle.h"
 #include "script_api/battle.h"
 #include "effects.h"
+#include "npc.h"
+#include "rare_enemy.h"
 
 HitResult calc_item_check_hit(void) {
     BattleStatus* battleStatus = &gBattleStatus;
@@ -143,6 +145,9 @@ HitResult calc_item_damage_enemy(void) {
     temp = get_defense(target, targetPart->defenseTable, battleStatus->curAttackElement);
     if (!(battleStatus->curAttackElement & DAMAGE_TYPE_IGNORE_DEFENSE)) {
         temp += target->defenseBoost;
+        if (RARE_FIGHT_ACTIVE() && battleStatus->curAttackDamage > temp + RARE_DEFENSE_BONUS) {
+            temp += RARE_DEFENSE_BONUS;
+        }
     }
 
     attackDamage = battleStatus->curAttackDamage;

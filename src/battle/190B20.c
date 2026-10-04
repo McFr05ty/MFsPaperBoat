@@ -5,6 +5,8 @@
 #include "script_api/battle.h"
 #include "model.h"
 #include "sprite.h"
+#include "hard_mode.h"
+#include <libultraship/bridge/consolevariablebridge.h>
 
 f32 D_802938A4 = 0.0f;
 
@@ -1453,6 +1455,11 @@ Actor* create_actor(Formation formation) {
     actor->headOffset.y = 0;
     actor->headOffset.z = 0;
     actor->maxHP = actor->curHP = formationActor->maxHP;
+    if (CVarGetInteger(CVAR_HARD_MODE, 0)) {
+        // Hard Mode: double enemy health.
+        actor->maxHP *= 2;
+        actor->curHP = actor->maxHP;
+    }
     actor->numParts = partCount;
     actor->idleSource = nullptr;
     actor->takeTurnSource = formationActor->initScript;
