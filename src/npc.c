@@ -1366,18 +1366,22 @@ static u16 rare_holo_color(u16 color, s32 hue) {
     return PACK_PAL_RGBA(r, g, b, a);
 }
 
-// Draws a rare overworld enemy with recolored palettes. Returns false if this NPC is not rare
-// (or anything looks unsafe), so the normal drawing code runs instead.
+// Rare Enemies: soft cycling rainbow color, blended toward white so the multiply tint keeps the art bright.
+static void rare_tint_color(s32 seed, s32* outR, s32* outG, s32* outB) {
+    u32 t = gGameStatusPtr->frameCounter * RARE_HOLO_SPEED + (u32) (seed & 0xFF) * 100;
+
+    rare_rainbow((s32) (t % 768), outR, outG, outB);
+    *outR = 255 - ((255 - *outR) * RARE_TINT_STRENGTH) / 100;
+    *outG = 255 - ((255 - *outG) * RARE_TINT_STRENGTH) / 100;
+    *outB = 255 - ((255 - *outB) * RARE_TINT_STRENGTH) / 100;
+}
+
+// Rare Enemies: draws a rare overworld enemy with the normal sprite (so texture packs show) under a tint.
+// Returns false if this NPC is not rare, or is translucent, so the normal drawing code runs instead.
 static b32 rare_npc_try_draw(Npc* npc, s32 yaw, Matrix4f mtx) {
-    PAL_PTR* originals;
-    PAL_PTR src;
-    PAL_PTR dst;
     Enemy* enemy;
-    s32 count = 0;
-    s32 i, j;
     s32 alpha;
-    s32 time;
-    u32 mask;
+    s32 r, g, b;
 
     if (!CVarGetInteger(CVAR_RARE_ENEMIES, 0) || (npc->flags & NPC_FLAG_NO_ANIMS_LOADED)) {
         return false;
@@ -1388,108 +1392,47 @@ static b32 rare_npc_try_draw(Npc* npc, s32 yaw, Matrix4f mtx) {
         return false;
     }
 
-    originals = spr_get_npc_palettes(npc->curAnim >> 16);
-    if (originals == nullptr) {
-        return false;
-    }
-    while (count < 16 && (intptr_t) originals[count] != -1) {
-        count++;
-    }
-    if (count == 0) {
-        return false;
-    }
-
-    time = (s32) ((gGameStatusPtr->frameCounter * RARE_HOLO_SPEED) % 768);
-    for (i = 0; i < count; i++) {
-        src = port_sprite_palette_data(originals[i]);
-        if (src == nullptr) {
-            return false;
-        }
-        dst = npc->copiedPalettes[i];
-        for (j = 0; j < SPR_PAL_SIZE; j++) {
-            dst[j] = rare_holo_color(src[j], (time + i * 100 + j * RARE_HOLO_SPREAD) % 768);
-        }
-        npc->adjustedPalettes[i] = dst;
-    }
-
     alpha = npc->alpha * npc->hideAlpha / 255;
-    mask = DRAW_SPRITE_OVERRIDE_PALETTES;
     if (alpha < 255) {
-        mask |= DRAW_SPRITE_OVERRIDE_ALPHA;
+        return false;
     }
-    spr_draw_npc_sprite(npc->spriteInstanceID | mask, yaw, alpha, npc->adjustedPalettes, mtx);
+
+    rare_tint_color(npc->npcID, &r, &g, &b);
+    rare_tint_begin(r, g, b);
+    spr_draw_npc_sprite(npc->spriteInstanceID, yaw, alpha, nullptr, mtx);
+    rare_tint_end();
     return true;
 }
 
-// Rare Enemies: holographic look for enemies in a rare fight (battle screen).
-// Returns false if the normal drawing code should run instead.
-b32 rare_battle_try_draw(ActorPart* part, s32 yaw, Matrix4f mtx) {
+// Rare Enemies: starts the tint for one part of an enemy in a rare fight (battle screen).
+// The caller draws the part normally and then calls rare_tint_end().
+void rare_battle_tint_begin(ActorPart* part) {
     DecorationTable* decorations;
-    PAL_PTR* originals;
-    PAL_PTR src;
-    PAL_PTR dst;
-    s32 count = 0;
-    s32 i, j;
-    s32 opacity = 255;
-    s32 time;
-    u32 mask = DRAW_SPRITE_OVERRIDE_PALETTES;
+    s32 r, g, b;
 
     if (!CVarGetInteger(CVAR_RARE_ENEMIES, 0) || gCurrentEncounter.scriptedBattle) {
-        return false;
+        return;
     }
     if (gCurrentEncounter.curEnemy == nullptr || !gCurrentEncounter.curEnemy->isRare) {
-        return false;
+        return;
     }
 
     decorations = part->decorationTable;
     if (decorations == nullptr || (part->flags & ACTOR_PART_FLAG_NO_DECORATIONS)) {
-        return false;
+        return;
     }
 
-    // Leave status effects, hit flashes and glows alone so they still show.
+    // Leave status effects, hit flashes, glows and translucent parts alone.
     if (decorations->paletteAdjustment != ACTOR_PAL_ADJUST_NONE
         || decorations->flashEnabled != FLASH_PAL_OFF
-        || decorations->glowState != GLOW_PAL_OFF) {
-        return false;
+        || decorations->glowState != GLOW_PAL_OFF
+        || part->opacity < 255
+        || (part->flags & ACTOR_PART_FLAG_TRANSPARENT)) {
+        return;
     }
 
-    originals = spr_get_npc_palettes(part->curAnimation >> 16);
-    if (originals == nullptr) {
-        return false;
-    }
-    while (count < ARRAY_COUNT(decorations->adjustedPalettes) && (intptr_t) originals[count] != -1) {
-        count++;
-    }
-    if (count == 0) {
-        return false;
-    }
-
-    time = (s32) ((gGameStatusPtr->frameCounter * RARE_HOLO_SPEED) % 768);
-    for (i = 0; i < count; i++) {
-        src = port_sprite_palette_data(originals[i]);
-        if (src == nullptr) {
-            return false;
-        }
-        dst = decorations->copiedPalettes[0][i];
-        for (j = 0; j < SPR_PAL_SIZE; j++) {
-            dst[j] = rare_holo_color(src[j], (time + i * 100 + j * RARE_HOLO_SPREAD) % 768);
-        }
-    }
-    // Only point the part at the new palettes once every one of them was built.
-    for (i = 0; i < count; i++) {
-        decorations->adjustedPalettes[i] = decorations->copiedPalettes[0][i];
-    }
-
-    if (part->opacity < 255) {
-        mask |= DRAW_SPRITE_OVERRIDE_ALPHA;
-        opacity = part->opacity;
-    }
-    if (part->flags & ACTOR_PART_FLAG_TRANSPARENT) {
-        mask |= DRAW_SPRITE_OVERRIDE_ALPHA;
-        opacity = opacity * 120 / 255;
-    }
-    spr_draw_npc_sprite(part->spriteInstanceID | mask, yaw, opacity, decorations->adjustedPalettes, mtx);
-    return true;
+    rare_tint_color(0, &r, &g, &b);
+    rare_tint_begin(r, g, b);
 }
 
 void npc_render_without_adjusted_palettes(Npc* npc, s32 arg1, Matrix4f mtx) {

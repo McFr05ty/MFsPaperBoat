@@ -31,4 +31,16 @@
 // True while the current battle was started by a rare overworld enemy.
 #define RARE_FIGHT_ACTIVE() (CVarGetInteger(CVAR_RARE_ENEMIES, 0) && !gCurrentEncounter.scriptedBattle && gCurrentEncounter.curEnemy != nullptr && gCurrentEncounter.curEnemy->isRare)
 
+// Rare enemy tint: how much of the cycling rainbow is mixed in (0-100). Higher is more colorful and darker.
+#define RARE_TINT_STRENGTH 60
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+void rare_tint_begin(int r, int g, int b);
+void rare_tint_end(void);
+#ifdef __cplusplus
+}
+#endif
+
 #endif
