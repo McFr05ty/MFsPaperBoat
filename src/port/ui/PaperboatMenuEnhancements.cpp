@@ -9,6 +9,15 @@ extern std::shared_ptr<PaperboatMenu> mPaperboatMenu;
 
 using namespace UIWidgets;
 
+// Hard Mode multipliers, stored as a choice number (0 = 1.0x ... 4 = 3.0x).
+static const std::unordered_map<int32_t, const char*> hardModeMultiplierOptions = {
+    { 0, "1.0x" },
+    { 1, "1.5x" },
+    { 2, "2.0x" },
+    { 3, "2.5x" },
+    { 4, "3.0x" },
+};
+
 static const std::unordered_map<int32_t, const char*> blockWindowOptions = {
     { 0, "Original (3 frames)" },
     { 1, "Forgiving (7 frames)" },
@@ -105,9 +114,44 @@ void PaperboatMenu::AddMenuEnhancements() {
         .CVar(CVAR_HARD_MODE)
         .Options(
             CheckboxOptions().Tooltip(
-                "Enemies have double health and deal 1.5x attack damage (rounded up). "
+                "Enemies have more health and deal more attack damage (the options below set how much; defaults are 2.0x and 1.5x, rounded up). "
                 "Status effects are not changed. Toggle before entering a battle."
             )
+        );
+
+    AddWidget(path, "Hard Mode Health", WIDGET_CVAR_COMBOBOX)
+        .CVar(CVAR_HARD_MODE_HEALTH)
+        .PreFunc([](WidgetInfo& info) {
+            // An unset or out-of-range value would make the combo box throw, so reset it to the default first.
+            int32_t choice = CVarGetInteger(CVAR_HARD_MODE_HEALTH, -1);
+            if (choice < 0 || choice > 4) {
+                CVarSetInteger(CVAR_HARD_MODE_HEALTH, HARD_MODE_DEFAULT_HEALTH_CHOICE);
+            }
+        })
+        .Options(
+            ComboboxOptions()
+                .Tooltip(
+                    "Enemy health multiplier while Hard Mode is on (rounded up). Default 2.0x. "
+                    "Applies to battles that start afterward."
+                )
+                .ComboMap(hardModeMultiplierOptions)
+        );
+
+    AddWidget(path, "Hard Mode Attack", WIDGET_CVAR_COMBOBOX)
+        .CVar(CVAR_HARD_MODE_ATTACK)
+        .PreFunc([](WidgetInfo& info) {
+            int32_t choice = CVarGetInteger(CVAR_HARD_MODE_ATTACK, -1);
+            if (choice < 0 || choice > 4) {
+                CVarSetInteger(CVAR_HARD_MODE_ATTACK, HARD_MODE_DEFAULT_ATTACK_CHOICE);
+            }
+        })
+        .Options(
+            ComboboxOptions()
+                .Tooltip(
+                    "Enemy attack damage multiplier while Hard Mode is on (rounded up). Default 1.5x. "
+                    "Applied after defense and blocking. Status effects are not changed."
+                )
+                .ComboMap(hardModeMultiplierOptions)
         );
 
     AddWidget(path, "Super Guard", WIDGET_CVAR_CHECKBOX)

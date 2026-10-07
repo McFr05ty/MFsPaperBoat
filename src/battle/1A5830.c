@@ -588,10 +588,10 @@ HitResult calc_enemy_damage_target(Actor* attacker) {
         cancel_action_rating_combo(target);
     }
 
-    // Hard Mode: enemies deal 1.5x attack damage to Mario (rounded up), applied after
+    // Hard Mode: enemies deal multiplied attack damage to Mario (default 1.5x, rounded up), applied after
     // defense and blocking so a block cannot cancel it. Status effects are untouched.
     if (actorClass != ACTOR_CLASS_ENEMY && damage > 0 && CVarGetInteger(CVAR_HARD_MODE, 0)) {
-        damage = (damage * 3 + 1) / 2;
+        damage = (damage * hard_mode_halves(CVAR_HARD_MODE_ATTACK, HARD_MODE_DEFAULT_ATTACK_CHOICE) + 1) / 2;
         if (damage > 99) {
             damage = 99;
         }

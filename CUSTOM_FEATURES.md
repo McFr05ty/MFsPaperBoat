@@ -6,8 +6,8 @@ PaperBoat is made by Harbour Masters and is based on the Paper Mario decompilati
 
 ## Hard Mode
 
-- Enemies start battles with double health.
-- Enemy attacks deal 1.5x damage to Mario and his partners, rounded up, applied after defense and blocking.
+- Enemy health is multiplied when a battle starts (default 2.0x). Choose 1.0x, 1.5x, 2.0x, 2.5x or 3.0x with the **Hard Mode Health** option, rounded up. Changing it affects battles that start afterward.
+- Enemy attack damage to Mario and his partners is multiplied (default 1.5x). Choose 1.0x, 1.5x, 2.0x, 2.5x or 3.0x with the **Hard Mode Attack** option, rounded up and applied after defense and blocking.
 - Status effects are not changed.
 - A save file loaded while Hard Mode is on receives a Lucky Star key item (if it does not already have one and there is room in the key item list), and action commands are enabled. Nothing is shown on screen. The story scene that normally gives out the Lucky Star is unchanged, and turning Hard Mode off later does not remove the item or action commands.
 
@@ -37,7 +37,7 @@ Rare enemy constants (spawn default, shimmer strength and speed, rare bonuses, s
 ## Testing status
 
 - Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build.
-- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect.
+- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect; the Hard Mode health and attack options.
 
 ## Building
 

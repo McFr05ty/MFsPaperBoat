@@ -1456,8 +1456,8 @@ Actor* create_actor(Formation formation) {
     actor->headOffset.z = 0;
     actor->maxHP = actor->curHP = formationActor->maxHP;
     if (CVarGetInteger(CVAR_HARD_MODE, 0)) {
-        // Hard Mode: double enemy health.
-        actor->maxHP *= 2;
+        // Hard Mode: enemy health multiplier (1.0x-3.0x in 0.5x steps, rounded up).
+        actor->maxHP = (actor->maxHP * hard_mode_halves(CVAR_HARD_MODE_HEALTH, HARD_MODE_DEFAULT_HEALTH_CHOICE) + 1) / 2;
         actor->curHP = actor->maxHP;
     }
     actor->numParts = partCount;
