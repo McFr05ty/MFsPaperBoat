@@ -15,7 +15,7 @@ PaperBoat is made by Harbour Masters and is based on the Paper Mario decompilati
 
 Settings: **Rare Enemies** (checkbox) and **Rare Enemy Spawn Chance** (slider, 0-100%, default 5%). Each hostile overworld enemy rolls when a map loads. Friendly NPCs never roll.
 
-- Rare enemies are drawn with a soft cycling rainbow tint over their normal sprite, in the overworld and in battle, so texture packs still show. Translucent sprites and sprites with status effects are not tinted.
+- Rare enemies are drawn with a soft cycling rainbow tint over their normal sprite, in the overworld and in battle, so texture packs still show. Translucent sprites and sprites with status effects are not tinted. This replaces an earlier palette recolor that made rare enemies show the original art instead of the pack.
 - A fight started by a rare enemy gives its enemies +2 attack and +1 defense. The defense bonus is skipped for weak hits so they are never reduced to zero by it.
 - A rare enemy drops one extra item from a pool of Super Shroom, Maple Syrup, Ultra Shroom and Life Shroom.
 - Each defeated enemy drops double star points (at least +1) with a floor of 5, never exceeding the 100-point cap per battle.
@@ -36,8 +36,8 @@ Rare enemy constants (spawn default, shimmer strength and speed, rare bonuses, s
 
 ## Testing status
 
-- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build.
-- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect; the Hard Mode health and attack options; the rare enemy tint (experimental).
+- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build; the Hard Mode health and attack options; the rare enemy tint, with and without a texture pack; opening the menu in the release build.
+- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect.
 
 ## Building
 
