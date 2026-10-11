@@ -2,6 +2,8 @@
 
 This fork of [PaperBoat](https://github.com/HarbourMasters/PaperBoat) adds optional gameplay features. All of them are under **Enhancements > Gameplay** in the in-game menu.
 
+Based on upstream PaperBoat 1.0.3 (Mulberry Delta). Upstream release notes: https://github.com/HarbourMasters/PaperBoat/releases/tag/1.0.3
+
 PaperBoat is made by Harbour Masters and is based on the Paper Mario decompilation and Paper Mario DX. This fork is not affiliated with them. You need your own legally obtained US copy of Paper Mario; no game assets are included here.
 
 ## Hard Mode
@@ -36,7 +38,7 @@ Rare enemy constants (spawn default, shimmer strength and speed, rare bonuses, s
 
 ## Testing status
 
-- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build; the Hard Mode health and attack options; the rare enemy tint, with and without a texture pack; opening the menu in the release build.
+- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build; the Hard Mode health and attack options; the rare enemy tint, with and without a texture pack; opening the menu in the release build; opening the menu and the Blueprint Editor in the release build.
 - Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect.
 
 ## Building
