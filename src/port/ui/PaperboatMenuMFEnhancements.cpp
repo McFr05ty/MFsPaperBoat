@@ -3,6 +3,7 @@
 #include "hard_mode.h"
 #include "super_guard.h"
 #include "rare_enemy.h"
+#include "pit_of_trials.h"
 
 namespace PaperboatGui {
 
@@ -140,6 +141,19 @@ void PaperboatMenu::AddMenuMFEnhancements() {
                 .DefaultValue(RARE_ENEMY_CHANCE_PERCENT)
                 .Format("%d%%")
         );
+
+    // MF's Enhancements > Pit of Trials (prototype)
+    path = { "MF's Enhancements", "Pit of Trials", SECTION_COLUMN_1 };
+    AddSidebarEntry("MF's Enhancements", path.sidebarName, 1);
+    path.column = SECTION_COLUMN_1;
+
+    AddWidget(path, "Enter Pit (prototype)", WIDGET_BUTTON)
+        .Options(
+            ButtonOptions().Tooltip(
+                "Prototype: jumps to a test room. There is no way back yet except loading a save, so use a copy of a save."
+            )
+        )
+        .Callback([](WidgetInfo& info) { pit_request_enter(); });
 }
 
 } // namespace PaperboatGui
