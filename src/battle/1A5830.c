@@ -1,4 +1,5 @@
 #include "battle/battle.h"
+#include "higher_level_cap.h"
 #include "script_api/battle.h"
 #include "effects.h"
 #include "hud_element.h"
@@ -2851,8 +2852,14 @@ API_CALLABLE(DropStarPoints) {
         ntd = (ntd + 50.0f) / 100.0f;
     }
     numToDrop = ntd;
+    if (hlc_on() && !hlc_level_capped(playerData->level, playerData->hardMaxHP, playerData->hardMaxFP, playerData->maxBP)) {
+        s32 minDrop = hlc_star_floor((s32) enemyLevel);
+        if (numToDrop < minDrop) {
+            numToDrop = minDrop;
+        }
+    }
 
-    if (playerData->level < 27) {
+    if (!hlc_level_capped(playerData->level, playerData->hardMaxHP, playerData->hardMaxFP, playerData->maxBP)) {
         s32 spawnMode;
         s32 i;
 

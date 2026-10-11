@@ -34,4 +34,50 @@ static inline int hlc_clamp99(int value) {
     return value > 99 ? 99 : value;
 }
 
+// Picks Mario still needs: each level-up raises one stat, HP and FP by 5 and BP by 3, up to 99.
+static inline int hlc_picks_left(int hp, int fp, int bp) {
+    int n = 0;
+
+    if (hp < 99) {
+        n += (99 - hp + 4) / 5;
+    }
+    if (fp < 99) {
+        n += (99 - fp + 4) / 5;
+    }
+    if (bp < 99) {
+        n += (99 - bp + 2) / 3;
+    }
+    return n;
+}
+
+// Is Mario at the level cap? Normally level 27. With the toggle on: all of HP, FP and BP are at 99.
+static inline int hlc_level_capped(int level, int hp, int fp, int bp) {
+    if (hlc_on()) {
+        return hlc_picks_left(hp, fp, bp) == 0;
+    }
+    return level >= 27;
+}
+
+// Will the pending level-up(s) reach the cap? Normally the original "level + pending == 27" test.
+static inline int hlc_cap_reached(int level, int pending, int hp, int fp, int bp) {
+    if (hlc_on()) {
+        return pending >= hlc_picks_left(hp, fp, bp);
+    }
+    return level + pending == 27;
+}
+
+// Minimum star points per defeated enemy while the toggle is on and Mario is below the cap.
+static inline int hlc_star_floor(int enemyLevel) {
+    if (enemyLevel <= 5) {
+        return 1;
+    }
+    if (enemyLevel <= 15) {
+        return 2;
+    }
+    if (enemyLevel <= 20) {
+        return 3;
+    }
+    return 4;
+}
+
 #endif

@@ -1069,7 +1069,7 @@ void update_status_bar(void) {
         status_bar_draw_stat(statusBar->fpTimesHID, x, y, statusBar->displayFP, playerData->curMaxFP);
     }
 
-    if (playerData->level >= 27) {
+    if (hlc_level_capped(playerData->level, playerData->hardMaxHP, playerData->hardMaxFP, playerData->maxBP)) {
         playerData->starPoints = 0;
     }
 

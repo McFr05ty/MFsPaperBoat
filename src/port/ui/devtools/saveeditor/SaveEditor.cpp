@@ -1,4 +1,5 @@
 #include "SaveEditor.h"
+#include "higher_level_cap.h"
 #include "port/ui/UIWidgets.hpp"
 #include "port/ActorTypeNames.h"
 #include <string>
@@ -667,7 +668,7 @@ void SaveEditor_DrawPlayerMenu() {
                             .LabelPosition(UIWidgets::LabelPositions::None)
                             .Format("Level: %i")
                             .Min(1)
-                            .Max(30)
+                            .Max(hlc_on() ? 99 : 30)
                     ))
                 {
                     gPlayerData.level = playerLevel;
@@ -702,7 +703,7 @@ void SaveEditor_DrawPlayerMenu() {
                             .Format(maxHealthFormat.c_str())
                             .Step(5)
                             .Min(5)
-                            .Max(50)
+                            .Max(hlc_hp_cap())
                     ))
                 {
                     gPlayerData.hardMaxHP = maxHealth;
@@ -738,7 +739,7 @@ void SaveEditor_DrawPlayerMenu() {
                             .Format(maxFlowerFormat.c_str())
                             .Step(5)
                             .Min(5)
-                            .Max(50)
+                            .Max(hlc_fp_cap())
                     ))
                 {
                     gPlayerData.hardMaxFP = maxFlower;
@@ -757,7 +758,7 @@ void SaveEditor_DrawPlayerMenu() {
                             .LabelPosition(UIWidgets::LabelPositions::None)
                             .Format("Current BP: %i")
                             .Min(3)
-                            .Max(30)
+                            .Max(hlc_bp_cap())
                     ))
                 {
                     gPlayerData.maxBP = maxBadgePoints;

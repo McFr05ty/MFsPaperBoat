@@ -592,14 +592,14 @@ void btl_state_update_celebration(void) {
                         playerData->starPoints++;
                     }
                 }
-                if (playerData->level >= 27) {
+                if (hlc_level_capped(playerData->level, playerData->hardMaxHP, playerData->hardMaxFP, playerData->maxBP)) {
                     playerData->starPoints = 0;
                 }
                 if (playerData->starPoints >= 100) {
                     pendingLevelUps = 1;
                     playerData->starPoints -= 100;
                 }
-                if (playerData->level + pendingLevelUps == 27) {
+                if (hlc_cap_reached(playerData->level, pendingLevelUps, playerData->hardMaxHP, playerData->hardMaxFP, playerData->maxBP)) {
                     playerData->starPoints = 0;
                 }
                 if (battleStatus->totalStarPoints == 0) {
