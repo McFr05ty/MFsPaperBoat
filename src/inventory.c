@@ -1,4 +1,5 @@
 #include "inventory.h"
+#include "higher_level_cap.h"
 #include "hud_element.h"
 #include "dx/config.h"
 #include "port/Engine.h"
@@ -477,16 +478,16 @@ void enforce_hpfp_limits(void) {
     PlayerData* playerData = &gPlayerData;
 
     playerData->curMaxHP = playerData->hardMaxHP + (is_ability_active(ABILITY_HP_PLUS) * 5);
-    if (playerData->curMaxHP > 75) {
-        playerData->curMaxHP = 75;
+    if (playerData->curMaxHP > hlc_cur_cap(playerData->hardMaxHP)) {
+        playerData->curMaxHP = hlc_cur_cap(playerData->hardMaxHP);
     }
     if (playerData->curHP > playerData->curMaxHP) {
         playerData->curHP = playerData->curMaxHP;
     }
 
     playerData->curMaxFP = playerData->hardMaxFP + (is_ability_active(ABILITY_FP_PLUS) * 5);
-    if (playerData->curMaxFP > 75) {
-        playerData->curMaxFP = 75;
+    if (playerData->curMaxFP > hlc_cur_cap(playerData->hardMaxFP)) {
+        playerData->curMaxFP = hlc_cur_cap(playerData->hardMaxFP);
     }
     if (playerData->curFP > playerData->curMaxFP) {
         playerData->curFP = playerData->curMaxFP;

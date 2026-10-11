@@ -1,4 +1,5 @@
 #include "common.h"
+#include "higher_level_cap.h"
 #include "effects.h"
 #include "hud_element.h"
 #include "message_ids.h"
@@ -741,7 +742,7 @@ void btl_state_update_celebration(void) {
                 CantLevelUpStat[MENU_FP] = false;
                 CantLevelUpStat[MENU_BP] = false;
 
-                if (playerData->hardMaxFP != 50) {
+                if (playerData->hardMaxFP < hlc_fp_cap()) {
                     // current FP
                     tensDigit = playerData->curMaxFP / 10;
                     onesDigit = playerData->curMaxFP % 10;
@@ -766,8 +767,8 @@ void btl_state_update_celebration(void) {
                     hud_element_set_render_pos(hid, x - 3, y + 46);
 
                     // upgraded FP
-                    tensDigit = (playerData->curMaxFP + 5) / 10;
-                    onesDigit = (playerData->curMaxFP + 5) % 10;
+                    tensDigit = hlc_clamp99(playerData->curMaxFP + 5) / 10;
+                    onesDigit = hlc_clamp99(playerData->curMaxFP + 5) % 10;
                     hid = LevelUpStatTextIDs[LVL_UP_FP][LVL_UP_NEXT_TENS];
                     hud_element_set_script(hid, HES_LevelUpDigits[LVL_UP_FP][tensDigit]);
                     if (tensDigit != 0) {
@@ -811,7 +812,7 @@ void btl_state_update_celebration(void) {
                     hud_element_set_render_pos(hid, x + 17, y + 46);
                 }
 
-                if (playerData->hardMaxHP != 50) {
+                if (playerData->hardMaxHP < hlc_hp_cap()) {
                     // current HP
                     tensDigit = playerData->curMaxHP / 10;
                     onesDigit = playerData->curMaxHP % 10;
@@ -836,8 +837,8 @@ void btl_state_update_celebration(void) {
                     hud_element_get_render_pos(hid, &x, &y);
                     hud_element_set_render_pos(hid, x - 3, y + 46);
 
-                    tensDigit = (playerData->curMaxHP + 5) / 10;
-                    onesDigit = (playerData->curMaxHP + 5) % 10;
+                    tensDigit = hlc_clamp99(playerData->curMaxHP + 5) / 10;
+                    onesDigit = hlc_clamp99(playerData->curMaxHP + 5) % 10;
 
                     hid = LevelUpStatTextIDs[LVL_UP_HP][LVL_UP_NEXT_TENS];
                     hud_element_set_script(hid, HES_LevelUpDigits[LVL_UP_HP][tensDigit]);
@@ -882,7 +883,7 @@ void btl_state_update_celebration(void) {
                     hud_element_set_render_pos(hid, x + 17, y + 46);
                 }
 
-                if (playerData->maxBP != 30) {
+                if (playerData->maxBP < hlc_bp_cap()) {
                     tensDigit = playerData->maxBP / 10;
                     onesDigit = playerData->maxBP % 10;
 
@@ -924,13 +925,13 @@ void btl_state_update_celebration(void) {
                     hud_element_set_render_pos(hid, x + 10, y + 46);
                 } else {
                     hid = LevelUpStatTextIDs[LVL_UP_BP][LVL_UP_NEXT_TENS];
-                    hud_element_set_script(hid, HES_LevelUpDigits[LVL_UP_BP][3]);
+                    hud_element_set_script(hid, HES_LevelUpDigits[LVL_UP_BP][playerData->maxBP / 10]);
                     hud_element_clear_flags(hid, HUD_ELEMENT_FLAG_DISABLED);
                     hud_element_get_render_pos(hid, &x, &y);
                     hud_element_set_render_pos(hid, x - 6, y + 46);
 
                     hid = LevelUpStatTextIDs[LVL_UP_BP][LVL_UP_NEXT_ONES];
-                    hud_element_set_script(hid, HES_LevelUpDigits[LVL_UP_BP][0]);
+                    hud_element_set_script(hid, HES_LevelUpDigits[LVL_UP_BP][playerData->maxBP % 10]);
                     hud_element_clear_flags(hid, HUD_ELEMENT_FLAG_DISABLED);
                     hud_element_get_render_pos(hid, &x, &y);
                     hud_element_set_render_pos(hid, x + 2, y + 46);
@@ -1058,10 +1059,13 @@ void btl_state_update_celebration(void) {
             switch (battleStatus->curSubmenu) {
                 case 0:
                     playerData->hardMaxHP += 5;
+                    if (playerData->hardMaxHP > hlc_hp_cap()) {
+                        playerData->hardMaxHP = hlc_hp_cap();
+                    }
                     playerData->curMaxHP += 5;
                     playerData->curHP += 5;
-                    if (playerData->curMaxHP > 75) {
-                        playerData->curMaxHP = 75;
+                    if (playerData->curMaxHP > hlc_cur_cap(playerData->hardMaxHP)) {
+                        playerData->curMaxHP = hlc_cur_cap(playerData->hardMaxHP);
                     }
                     if (playerData->curHP > playerData->curMaxHP) {
                         playerData->curHP = playerData->curMaxHP;
@@ -1071,10 +1075,13 @@ void btl_state_update_celebration(void) {
                     break;
                 case 1:
                     playerData->hardMaxFP += 5;
+                    if (playerData->hardMaxFP > hlc_fp_cap()) {
+                        playerData->hardMaxFP = hlc_fp_cap();
+                    }
                     playerData->curMaxFP += 5;
                     playerData->curFP += 5;
-                    if (playerData->curMaxFP > 75) {
-                        playerData->curMaxFP = 75;
+                    if (playerData->curMaxFP > hlc_cur_cap(playerData->hardMaxFP)) {
+                        playerData->curMaxFP = hlc_cur_cap(playerData->hardMaxFP);
                     }
                     if (playerData->curFP > playerData->curMaxFP) {
                         playerData->curFP = playerData->curMaxFP;
@@ -1082,8 +1089,8 @@ void btl_state_update_celebration(void) {
                     break;
                 case 2:
                     playerData->maxBP += 3;
-                    if (playerData->maxBP > 30) {
-                        playerData->maxBP = 30;
+                    if (playerData->maxBP > hlc_bp_cap()) {
+                        playerData->maxBP = hlc_bp_cap();
                     }
                     break;
             }

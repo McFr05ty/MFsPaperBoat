@@ -1,4 +1,5 @@
 #include "PaperboatMenu.h"
+#include "higher_level_cap.h"
 #include "hard_mode.h"
 #include "super_guard.h"
 #include "rare_enemy.h"
@@ -156,6 +157,15 @@ void PaperboatMenu::AddMenuEnhancements() {
                     "Applied after defense and blocking. Status effects are not changed."
                 )
                 .ComboMap(hardModeMultiplierOptions)
+        );
+
+    AddWidget(path, "Higher Level Cap", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_HIGHER_LEVEL_CAP)
+        .Options(
+            CheckboxOptions().Tooltip(
+                "Raises the most HP, FP and BP Mario can reach to 99 each. Stats above the normal limits are kept if you turn this off, "
+                "but cannot be raised further. The level cap and star point changes are not part of this yet."
+            )
         );
 
     AddWidget(path, "Super Guard", WIDGET_CVAR_CHECKBOX)
