@@ -1,6 +1,11 @@
 #ifndef PIT_OF_TRIALS_H
 #define PIT_OF_TRIALS_H
 
+#include "port/ui/cvar_prefixes.h"
+
+// Debug: index of a Pit room model to hide, -1 for none.
+#define CVAR_PIT_DEBUG_HIDE_MODEL CVAR_ENHANCEMENT("PitDebugHideModel")
+
 #ifdef __cplusplus
 extern "C" {
 #endif

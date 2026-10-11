@@ -154,6 +154,17 @@ void PaperboatMenu::AddMenuMFEnhancements() {
             )
         )
         .Callback([](WidgetInfo& info) { pit_request_enter(); });
+
+        AddWidget(path, "Hide model (debug)", WIDGET_CVAR_SLIDER_INT)
+            .CVar(CVAR_PIT_DEBUG_HIDE_MODEL)
+            .Options(
+                IntSliderOptions()
+                    .Tooltip("Debug: hides one model of the Pit room by index (-1 = none) to find the door models.")
+                    .Min(-1)
+                    .Max(23)
+                    .DefaultValue(-1)
+                    .Format("Hide model: %d")
+            );
 }
 
 } // namespace PaperboatGui
