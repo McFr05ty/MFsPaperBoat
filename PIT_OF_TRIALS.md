@@ -17,13 +17,13 @@ A 100 floor dungeon entered from a pipe in Toad Town Tunnels (TIK_02), near the 
 - Shop: healing and battle items only, random stock per visit, prices rise with depth.
 - Skip NPC: skips 3 floors for 30 coins or 5 floors for 50 coins.
 - Floor 100: Electro Super Blooper. It uses the Super Blooper model with the Electro Blooper behaviour and raised stats.
-- The pit is independent of the other custom features.
+- The pit does not depend on the other custom features. It has its own files, setting and menu section, and works with all of them off.
 
 ## Proposed, to confirm
 
 - Price formula: base price x (1 + floor / 25), rounded.
 - A skip never jumps past a rest floor or floor 100.
-- Independent means: Hard Mode, Rare Enemies, Super Guard and the Higher Level Cap star floor do not change Pit fights.
+- The other custom features still apply inside the pit when they are on. Hard Mode multiplies the pit's own scaling, Super Guard and the star point floor work as usual. Rare Enemies do not roll, because every pit fight is a scripted battle.
 - The pit uses Mario's normal coins and inventory.
 - Battles start from a hidden Pit Master NPC in TIK_02 through the normal encounter system, and TIK_02 is the rest room. (?)
 
