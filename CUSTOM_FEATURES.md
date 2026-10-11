@@ -1,6 +1,6 @@
 # Custom features
 
-This fork of [PaperBoat](https://github.com/HarbourMasters/PaperBoat) adds optional gameplay features. All of them are under **Enhancements > Gameplay** in the in-game menu.
+This fork of [PaperBoat](https://github.com/HarbourMasters/PaperBoat) adds optional gameplay features. All of them are under **MF's Enhancements** in the in-game menu.
 
 Based on upstream PaperBoat 1.0.3 (Mulberry Delta). Upstream release notes: https://github.com/HarbourMasters/PaperBoat/releases/tag/1.0.3
 

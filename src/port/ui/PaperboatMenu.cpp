@@ -86,6 +86,7 @@ void PaperboatMenu::InitElement() {
     Ship::Menu::InitElement();
     AddMenuSettings();
     AddMenuEnhancements();
+    AddMenuMFEnhancements();
     AddMenuShaderSettings();
     AddMenuDevTools();
 
