@@ -376,7 +376,7 @@ void hud_element_draw_rect(HudElement* hudElement, s16 texSizeX, s16 texSizeY, s
             texStartY = 0;
         }
 
-        if (lry < 0 || uly > SCREEN_HEIGHT) {
+        if (lry < 0 || uly >= SCREEN_HEIGHT) {
             break;
         }
 
@@ -399,6 +399,10 @@ void hud_element_draw_rect(HudElement* hudElement, s16 texSizeX, s16 texSizeY, s
             isLastTileY = true;
         }
 
+        if (lrt < ult) {
+            break;
+        }
+
         isLastTileX = false;
         uls = 0;
         ulx = baseX;
@@ -411,7 +415,7 @@ void hud_element_draw_rect(HudElement* hudElement, s16 texSizeX, s16 texSizeY, s
                 texStartX = 0;
             }
 
-            if (lrx < wsClipLeft || ulx > wsClipRight) {
+            if (lrx < wsClipLeft || ulx >= wsClipRight) {
                 break;
             }
 
@@ -432,6 +436,10 @@ void hud_element_draw_rect(HudElement* hudElement, s16 texSizeX, s16 texSizeY, s
                     lrx = baseX + drawSizeX;
                 }
                 isLastTileX = true;
+            }
+
+            if (lrs < uls) {
+                break;
             }
 
             gDPPipeSync(gMainGfxPos++);
@@ -1963,6 +1971,32 @@ void hud_element_draw_clipped(s32 id) {
 
 void hud_element_draw_next(s32 id) {
     draw_hud_element_internal(id, HUD_ELEMENT_DRAW_NEXT);
+}
+
+void port_hud_element_draw_next_scaled(s32 id, s32 originX, s32 originY, f32 scale) {
+    HudElement* elem = (*gHudElements)[id & ~HUD_ELEMENT_BATTLE_ID_MASK];
+    HudElement saved;
+
+    if (scale == 1.0f || !elem->flags || (elem->flags & HUD_ELEMENT_FLAG_DISABLED) || elem->drawSizePreset < 0
+        || (!(elem->flags & HUD_ELEMENT_FLAG_CUSTOM_SIZE) && elem->tileSizePreset < 0)) {
+        draw_hud_element_internal(id, HUD_ELEMENT_DRAW_NEXT);
+        return;
+    }
+
+    saved = *elem;
+    elem->renderPosX = originX + (elem->renderPosX - originX) * scale;
+    elem->renderPosY = originY + (elem->renderPosY - originY) * scale;
+    hud_element_set_scale(id, scale);
+    draw_hud_element_internal(id, HUD_ELEMENT_DRAW_NEXT);
+
+    elem->flags = saved.flags;
+    elem->uniformScale = saved.uniformScale;
+    elem->widthScale = saved.widthScale;
+    elem->heightScale = saved.heightScale;
+    elem->renderPosX = saved.renderPosX;
+    elem->renderPosY = saved.renderPosY;
+    elem->sizeX = saved.sizeX;
+    elem->sizeY = saved.sizeY;
 }
 
 void hud_element_draw_without_clipping(s32 id) {

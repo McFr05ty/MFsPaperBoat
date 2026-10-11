@@ -41,6 +41,17 @@ void port_appendGfx_shading_palette(
     s32 shadowR, s32 shadowG, s32 shadowB,
     s32 highlightR, s32 highlightG, s32 highlightB,
     s32 ambientPower, s32 renderMode);
+void port_begin_palette_override(PAL_PTR* palettes, PAL_PTR* originals);
+void port_end_palette_override(void);
+PAL_PTR port_resolve_palette(PAL_PTR* palettes, s32 index);
+void port_palette_frame(void);
+void port_palette_blend(PAL_PTR palette, PAL_PTR from, PAL_PTR to, s32 alpha);
+void port_palette_tint(PAL_PTR palette, PAL_PTR base, f32 sr, f32 sg, f32 sb, s32 r, s32 g, s32 b);
+
+// Sprite HD prefetch (SpritePatches.c)
+struct SpriteAnimData;
+void port_prefetch_npc_anim(struct SpriteAnimData* sprite, s32 prevAnimID, s32 animID);
+void port_prefetch_player_anim(struct SpriteAnimData* sprite, s32 prevAnimID, s32 animID);
 
 // Message fonts (MessagePatches.c)
 void port_msg_font_loaded(s32 font);
@@ -88,6 +99,28 @@ s32 port_hud_clip_top(void);
 s32 port_hud_clip_bottom(void);
 s32 port_status_bar_y(void);
 s32 port_btl_menu_y(void);
+
+// Status bar options (StatusBarPatches.cpp)
+enum PortStatusBarElement {
+    PORT_STATUS_BAR_BACKGROUND,
+    PORT_STATUS_BAR_HP,
+    PORT_STATUS_BAR_FP,
+    PORT_STATUS_BAR_STAR_POWER,
+    PORT_STATUS_BAR_STAR_POINTS,
+    PORT_STATUS_BAR_COINS,
+    PORT_STATUS_BAR_STAR_PIECES,
+    PORT_STATUS_BAR_BADGES,
+};
+b32 port_status_bar_show(s32 element);
+b32 port_status_bar_always_show(void);
+b32 port_status_bar_flat_bottom(void);
+f32 port_status_bar_scale(void);
+f32 port_status_bar_box_width(void);
+f32 port_status_bar_box_height(void);
+s32 port_status_bar_retracted_y(void);
+void* port_status_bar_box_style(s32 styleID);
+void port_box_default_style(WindowStyleCustom* out, s32 styleID); // draw_box.c
+void port_hud_element_draw_next_scaled(s32 id, s32 originX, s32 originY, f32 scale); // hud_element.c
 
 // World-anchored screen overlays (ScreenAnchorPatches.cpp)
 void port_rect_anchor_begin(const void* key, uintptr_t index, s32 x, s32 y);
