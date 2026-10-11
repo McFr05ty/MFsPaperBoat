@@ -48,8 +48,8 @@ Rare enemy constants (spawn default, shimmer strength and speed, rare bonuses, s
 
 ## Testing status
 
-- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build; the Hard Mode health and attack options; the rare enemy tint, with and without a texture pack; opening the menu in the release build; opening the menu and the Blueprint Editor in the release build; Higher Level Cap: leveling past 27; Higher Level Cap: reaching 99 in all three stats.
-- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect; the Higher Level Cap star point floor; turning Higher Level Cap off; the pause, status bar and badge screens at 99 stats (including the 99 BP orb layout).
+- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build; the Hard Mode health and attack options; the rare enemy tint, with and without a texture pack; opening the menu and the Blueprint Editor in the release build; Higher Level Cap: leveling past 27; Higher Level Cap: reaching 99 in all three stats; the Higher Level Cap star point floor; turning Higher Level Cap off; the pause, status bar and badge screens at 99 stats, including the 99 BP orb layout; the MF's Enhancements menu.
+- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect.
 
 ## Building
 
