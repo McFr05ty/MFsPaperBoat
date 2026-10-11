@@ -32,14 +32,24 @@ Settings: **Super Guard** (checkbox, off by default) and **Super Guard Timing** 
 - Mario only. Status effects that an attack inflicts are not specially handled and have not been tested.
 - An earlier version of the reflect used a shock hit and could crash the game in some battles because the battle script memory ran out. The current version avoids that, but not every enemy has been tested.
 
+## Higher Level Cap
+
+Setting: **Higher Level Cap** (checkbox, off by default).
+
+- Mario can reach 99 HP, 99 FP and 99 BP instead of 50, 50 and 30. Max HP and FP with an HP Plus or FP Plus badge are capped at 99 as well.
+- The level cap moves from level 27 to the point where all three stats are 99, which is about level 70. Each level-up raises one stat (HP and FP by 5, BP by 3, never past 99), so there is always a stat to raise.
+- While Mario is below that cap, every defeated enemy gives at least 1 to 4 star points by its level (level 5 or lower: 1, 6-15: 2, 16-20: 3, 21 and up: 4). Enemies that already give more, such as Amazy Dayzees, keep their normal amount.
+- Turning the option off keeps any stats already above the normal limits but stops further level-ups past the normal cap.
+- In the debug build, the Save Editor limits follow the option.
+
 ## Tuning
 
 Rare enemy constants (spawn default, shimmer strength and speed, rare bonuses, star point rules) are in `include/rare_enemy.h`. Super Guard defaults and the reflect damage are in `include/super_guard.h`.
 
 ## Testing status
 
-- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build; the Hard Mode health and attack options; the rare enemy tint, with and without a texture pack; opening the menu in the release build; opening the menu and the Blueprint Editor in the release build.
-- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect.
+- Checked in play: Hard Mode health and damage; rare enemy spawning, the shimmer in the overworld and in battle, the rare attack and defense bonuses, and the spawn chance slider; Super Guard and its toggle; the Hard Mode Lucky Star gift enabling action commands; the Super Guard reflect in the release build; the Hard Mode health and attack options; the rare enemy tint, with and without a texture pack; opening the menu in the release build; opening the menu and the Blueprint Editor in the release build; Higher Level Cap: leveling past 27; Higher Level Cap: reaching 99 in all three stats.
+- Not yet checked: the 5-point star floor; Hard Mode combined with rare enemies; Hard Mode in boss fights (some boss scripts react to specific HP values); the Super Guard timing slider; defeating an attacker with the reflect; the Higher Level Cap star point floor; turning Higher Level Cap off; the pause, status bar and badge screens at 99 stats (including the 99 BP orb layout).
 
 ## Building
 
