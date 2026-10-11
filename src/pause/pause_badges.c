@@ -1,4 +1,5 @@
 #include "pause/pause_common.h"
+#include "higher_level_cap.h"
 #include "message_ids.h"
 
 extern Gfx PauseGfxOrbs[];
@@ -320,6 +321,23 @@ void pause_badges_draw_bp_orbs(s32 orbState, s32 x, s32 y) {
     }
 }
 
+// Same as pause_badges_draw_bp_orbs, but the orb can be drawn smaller (8 is the normal size).
+void pause_badges_draw_bp_orbs_sized(s32 orbState, s32 x, s32 y, s32 orbSize) {
+    s32 step = 8192 / orbSize;
+
+    switch (orbState) {
+        case 0:
+            pause_draw_rect(x * 4, y * 4, (x + orbSize) * 4, (y + orbSize) * 4, 0, 0, 256, step, step);
+            break;
+        case 1:
+            pause_draw_rect(x * 4, y * 4, (x + orbSize) * 4, (y + orbSize) * 4, 0, 0, 0, step, step);
+            break;
+        default:
+            pause_draw_rect(x * 4, y * 4, (x + orbSize) * 4, (y + orbSize) * 4, 0, 0, 512, step, step);
+            break;
+    }
+}
+
 void pause_badges_draw_contents(MenuPanel* menu, s32 baseX, s32 baseY, s32 width, s32 height, s32 opacity, s32 darkening) {
     s32 pageIndex, i;
     s32 badgeIndex;
@@ -629,7 +647,7 @@ void pause_badges_draw_contents(MenuPanel* menu, s32 baseX, s32 baseY, s32 width
     draw_number(playerData->maxBP, baseX + OFFSET_3_X, baseY + OFFSET_3_Y, DRAW_NUMBER_CHARSET_THIN, MSG_PAL_STANDARD, 255, DRAW_NUMBER_STYLE_MONOSPACE | DRAW_NUMBER_STYLE_ALIGN_RIGHT);
     bpAmount = playerData->maxBP - pause_get_total_equipped_bp_cost();
     bpAvailOffsetX = 0;
-    bpAvailOffsetY = (playerData->maxBP - 1) / 10 * 8;
+    bpAvailOffsetY = (playerData->maxBP - 1) / hlc_orb_cols(playerData->maxBP) * hlc_orb_dy(playerData->maxBP);
     if (bpAmount < 10) {
         bpAvailOffsetX = -4;
     }
@@ -655,14 +673,14 @@ void pause_badges_draw_contents(MenuPanel* menu, s32 baseX, s32 baseY, s32 width
     gDPSetTextureFilter(gMainGfxPos++, G_TF_BILERP);
     for (orbIndex = 0; orbIndex < maxBP; orbIndex++) {
         gDPSetPrimColor(gMainGfxPos++, 0, 0, 227, 227, 227, 255);
-        pause_badges_draw_bp_orbs(0, baseX + 11 + (orbIndex % 10) * 6, baseY + 92 + (orbIndex / 10) * 8);
+        pause_badges_draw_bp_orbs_sized(0, baseX + 11 + (orbIndex % hlc_orb_cols(maxBP)) * hlc_orb_dx(maxBP), baseY + 92 + (orbIndex / hlc_orb_cols(maxBP)) * hlc_orb_dy(maxBP), hlc_orb_size(maxBP));
     }
 
     gDPPipeSync(gMainGfxPos++);
     if (canBeEquipped) {
         gDPSetPrimColor(gMainGfxPos++, 0, 0, orbColorR, orbColorG, orbColorB, 255);
         for (orbIndex = 0; orbIndex < bpAvailable - costBP; orbIndex++) {
-            pause_badges_draw_bp_orbs(2, baseX + 11 +(orbIndex % 10) * 6, baseY + 92 + (orbIndex / 10) * 8);
+            pause_badges_draw_bp_orbs_sized(2, baseX + 11 + (orbIndex % hlc_orb_cols(maxBP)) * hlc_orb_dx(maxBP), baseY + 92 + (orbIndex / hlc_orb_cols(maxBP)) * hlc_orb_dy(maxBP), hlc_orb_size(maxBP));
         }
 
         gDPPipeSync(gMainGfxPos++);
@@ -673,13 +691,13 @@ void pause_badges_draw_contents(MenuPanel* menu, s32 baseX, s32 baseY, s32 width
         gDPSetPrimColor(gMainGfxPos++, 0, 0, orbColorR, orbColorG, orbColorB, orbBlinkOpacity);
 
         for (orbIndex = bpAvailable - costBP; orbIndex < bpAvailable; orbIndex++) {
-            pause_badges_draw_bp_orbs(2, baseX + 11 +(orbIndex % 10) * 6, baseY + 92 + (orbIndex / 10) * 8);
+            pause_badges_draw_bp_orbs_sized(2, baseX + 11 + (orbIndex % hlc_orb_cols(maxBP)) * hlc_orb_dx(maxBP), baseY + 92 + (orbIndex / hlc_orb_cols(maxBP)) * hlc_orb_dy(maxBP), hlc_orb_size(maxBP));
         }
         gDPPipeSync(gMainGfxPos++);
     } else {
         gDPSetPrimColor(gMainGfxPos++, 0, 0, orbColorR, orbColorG, orbColorB, 255);
         for (orbIndex = 0; orbIndex < bpAvailable; orbIndex++) {
-            pause_badges_draw_bp_orbs(2, baseX + 11 + (orbIndex % 10) * 6, baseY + 92 + (orbIndex / 10) * 8);
+            pause_badges_draw_bp_orbs_sized(2, baseX + 11 + (orbIndex % hlc_orb_cols(maxBP)) * hlc_orb_dx(maxBP), baseY + 92 + (orbIndex / hlc_orb_cols(maxBP)) * hlc_orb_dy(maxBP), hlc_orb_size(maxBP));
         }
         gDPPipeSync(gMainGfxPos++);
     }

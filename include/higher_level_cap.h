@@ -80,4 +80,22 @@ static inline int hlc_star_floor(int enemyLevel) {
     return 4;
 }
 
+// Badge menu BP orbs: normal size up to 30 BP. Above that they are drawn at half size, 20 per row,
+// so the whole set stays inside the area 30 BP uses normally.
+static inline int hlc_orb_cols(int maxBP) {
+    return maxBP > 30 ? 20 : 10;
+}
+
+static inline int hlc_orb_dx(int maxBP) {
+    return maxBP > 30 ? 3 : 6;
+}
+
+static inline int hlc_orb_dy(int maxBP) {
+    return maxBP > 30 ? 4 : 8;
+}
+
+static inline int hlc_orb_size(int maxBP) {
+    return maxBP > 30 ? 4 : 8;
+}
+
 #endif
