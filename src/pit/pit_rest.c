@@ -37,7 +37,7 @@ EvtScript N(EVS_ReturnPipeExit) = {
     Set(GF_Unused_EVT_0A, false)
     Set(GF_Unused_EVT_0B, false)
     Set(GF_Unused_EVT_0C, false)
-    Call(GotoMap, Ref("tik_02"), 0)
+    Call(GotoMap, Ref("tik_02"), 1)
     Wait(100)
     Return
     End

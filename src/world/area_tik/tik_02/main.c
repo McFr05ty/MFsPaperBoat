@@ -2,6 +2,8 @@
 
 #include "world/common/atomic/TexturePan.inc.c"
 
+#include "world/common/entity/Pipe.inc.c"
+
 EvtScript N(EVS_ExitWalk_tik_18_1) = EVT_EXIT_WALK(60, tik_02_ENTRY_0, "tik_18", tik_18_ENTRY_1);
 
 EvtScript N(EVS_BindExitTriggers) = {
@@ -56,8 +58,14 @@ EvtScript N(EVS_Main) = {
         TEX_PAN_PARAMS_INIT(    0,    0,    0,    0)
         Exec(N(EVS_UpdateTexturePan))
     EndThread
-    Set(LVar0, Ref(N(EVS_BindExitTriggers)))
-    Exec(EnterWalk)
+    Call(GetEntryID, LVar0)
+    IfLt(LVar0, 1)
+        Set(LVar0, Ref(N(EVS_BindExitTriggers)))
+        Exec(EnterWalk)
+    Else
+        Set(LVarA, Ref(N(EVS_BindExitTriggers)))
+        Exec(N(EVS_Pipe_EnterVertical))
+    EndIf
     Wait(1)
     Return
     End
