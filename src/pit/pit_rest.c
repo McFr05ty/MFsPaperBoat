@@ -16,7 +16,7 @@ extern EvtScript tik_18_EVS_SetupDrips;
 
 EntryList N(Entrances) = {
     [0] { 60.0, 140.0, 7.0, 90.0 },   // where Mario drops in
-    [1] { 90.0, -10.0, 7.0, 90.0 },   // progress pipe, centre of the room, shifted 30 right
+    [1] { 120.0, -10.0, 7.0, 90.0 },   // progress pipe, centre of the room, shifted 60 right
     [2] { 300.0, -10.0, 0.0, 90.0 },  // return pipe, near the rightmost wall
 };
 
@@ -61,7 +61,7 @@ EvtScript N(EVS_Main) = {
     Set(GF_Unused_EVT_0B, true)
     Set(GF_Unused_EVT_0C, false)
     Call(MakeNpcs, true, Ref(N(DefaultNPCs)))
-    Call(MakeEntity, Ref(Entity_BlueWarpPipe), 90, -10, 7, 0,
+    Call(MakeEntity, Ref(Entity_BlueWarpPipe), 120, -10, 7, 0,
         1, Ref(N(EVS_ProgressPipeExit)),
         EVT_INDEX_OF_GAME_FLAG(GF_Unused_EVT_0A), MAKE_ENTITY_END)
     Call(MakeEntity, Ref(Entity_BlueWarpPipe), 300, -10, 0, 0,

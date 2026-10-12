@@ -27,6 +27,9 @@ EvtScript N(EVS_MakeEntities) = {
     Call(MakeEntity, Ref(Entity_BlueWarpPipe), 175, -10, -65, 0,
         1, Ref(N(EVS_PitPipeExit)),
         EVT_INDEX_OF_GAME_FLAG(GF_TIK02_Defeated_Blooper), MAKE_ENTITY_END)
+        // The save block and heart block next to the Pit entrance.
+        Call(MakeEntity, Ref(Entity_SavePoint), 100, 50, -60, 0, MAKE_ENTITY_END)
+        Call(MakeEntity, Ref(Entity_HeartBlock), 235, 50, -60, 0, MAKE_ENTITY_END)
     Return
     End
 };
