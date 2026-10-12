@@ -165,6 +165,17 @@ void PaperboatMenu::AddMenuMFEnhancements() {
                     .DefaultValue(-1)
                     .Format("Hide model: %d")
             );
+
+        AddWidget(path, "Start floor (debug)", WIDGET_CVAR_SLIDER_INT)
+            .CVar(CVAR_PIT_START_FLOOR)
+            .Options(
+                IntSliderOptions()
+                    .Tooltip("Debug: the floor Enter Pit starts on. Floors 80 and up can show a single Anti Guy.")
+                    .Min(1)
+                    .Max(99)
+                    .DefaultValue(1)
+                    .Format("Start floor: %d")
+            );
 }
 
 } // namespace PaperboatGui

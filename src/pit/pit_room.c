@@ -60,7 +60,7 @@ API_CALLABLE(N(ClearDefeatedFlags)) {
 }
 
 API_CALLABLE(N(RequestNextRoom)) {
-    pit_request_enter();
+    pit_request_next_floor();
     return ApiStatus_DONE2;
 }
 
@@ -82,7 +82,18 @@ EvtScript N(EVS_NpcDefeat_Gloomba) = {
     End
 };
 
+// Chooses the battle for this floor, using that battle's own arena (stage -1).
+API_CALLABLE(N(PickBattle)) {
+    Enemy* enemy = script->owner1.enemy;
+    Encounter* encounter = gCurrentEncounter.encounterList[enemy->encounterIndex];
+
+    encounter->battle = pit_pick_battle();
+    encounter->stage = -1;
+    return ApiStatus_DONE2;
+}
+
 EvtScript N(EVS_NpcInit_Gloomba) = {
+    Call(N(PickBattle))
     Call(BindNpcDefeat, NPC_SELF, Ref(N(EVS_NpcDefeat_Gloomba)))
     Return
     End

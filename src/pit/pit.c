@@ -3,6 +3,7 @@
 #include "game_modes.h"
 #include "pit_of_trials.h"
 #include <string.h>
+#include <libultraship/bridge/consolevariablebridge.h>
 
 extern AreaConfig gAreas[];
 extern MapSettings pit_room_settings;
@@ -62,8 +63,85 @@ static b32 pit_install_rooms(void) {
     return true;
 }
 
+extern const s16 gPitBattleIDs[];
+extern const s16 gPitBattleScores[];
+extern const s32 gPitBattleCount;
+
+#define PIT_LAST_FLOOR 99
+#define PIT_ANTI_GUY_FIRST_FLOOR 80
+#define PIT_ANTI_GUY_PERCENT 5
+#define PIT_ANTI_GUY_BATTLE 0x102C
+
+static int sPitFloor = 1;
+
+int pit_current_floor(void) {
+    return sPitFloor;
+}
+
 void pit_request_enter(void) {
+    int start = CVarGetInteger(CVAR_PIT_START_FLOOR, 1);
+
+    if (start < 1) {
+        start = 1;
+    }
+    if (start > PIT_LAST_FLOOR) {
+        start = PIT_LAST_FLOOR;
+    }
+    sPitFloor = start;
     sPitEnterRequested = 1;
+}
+
+void pit_request_next_floor(void) {
+    if (sPitFloor < PIT_LAST_FLOOR) {
+        sPitFloor++;
+    }
+    sPitEnterRequested = 1;
+}
+
+static int pit_near(int i, int target, int window) {
+    int diff = gPitBattleScores[i] - target;
+
+    if (diff < 0) {
+        diff = -diff;
+    }
+    return diff <= window;
+}
+
+// Battle floors are 1-90 (every tenth floor is a rest floor). The target enemy level climbs from 5 to 30.
+int pit_pick_battle(void) {
+    int battleFloor = sPitFloor - sPitFloor / 10;
+    int target = 50 + (battleFloor - 1) * 250 / 89;
+    int window;
+    int count = 0;
+    int pick;
+    int i;
+
+    if (sPitFloor >= PIT_ANTI_GUY_FIRST_FLOOR && rand_int(99) < PIT_ANTI_GUY_PERCENT) {
+        return PIT_ANTI_GUY_BATTLE;
+    }
+    for (window = 20; window <= 300; window += 10) {
+        for (i = 0; i < gPitBattleCount; i++) {
+            if (pit_near(i, target, window)) {
+                count++;
+            }
+        }
+        if (count > 0) {
+            break;
+        }
+    }
+    if (count == 0) {
+        return gPitBattleIDs[0];
+    }
+    pick = rand_int(count - 1);
+    for (i = 0; i < gPitBattleCount; i++) {
+        if (pit_near(i, target, window)) {
+            if (pick == 0) {
+                return gPitBattleIDs[i];
+            }
+            pick--;
+        }
+    }
+    return gPitBattleIDs[0];
 }
 
 void pit_poll(void) {
