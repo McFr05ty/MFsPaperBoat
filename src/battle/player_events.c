@@ -1,4 +1,5 @@
 #include "common.h"
+#include "inventory.h"
 #include "effects.h"
 #include "model.h"
 #include "hud_element.h"
@@ -265,7 +266,7 @@ API_CALLABLE(ConsumeLifeShroom) {
     if (playerData->curMaxHP < playerData->curHP) {
         playerData->curHP = playerData->curMaxHP;
     }
-    playerData->invItems[find_item(ITEM_LIFE_SHROOM)] = ITEM_NONE;
+    *get_inventory_slot(find_item(ITEM_LIFE_SHROOM)) = ITEM_NONE;
     sort_consumables();
     script->varTable[3] = item->potencyA;
 

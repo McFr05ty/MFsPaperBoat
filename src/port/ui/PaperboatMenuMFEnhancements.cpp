@@ -147,6 +147,8 @@ void PaperboatMenu::AddMenuMFEnhancements() {
     AddSidebarEntry("MF's Enhancements", path.sidebarName, 1);
     path.column = SECTION_COLUMN_1;
 
+#ifdef _DEBUG
+    // Debug builds only: shortcuts for testing the Pit.
     AddWidget(path, "Enter Pit (prototype)", WIDGET_BUTTON)
         .Options(
             ButtonOptions().Tooltip(
@@ -155,16 +157,56 @@ void PaperboatMenu::AddMenuMFEnhancements() {
         )
         .Callback([](WidgetInfo& info) { pit_request_enter(); });
 
-        AddWidget(path, "Start floor (debug)", WIDGET_CVAR_SLIDER_INT)
-            .CVar(CVAR_PIT_START_FLOOR)
-            .Options(
-                IntSliderOptions()
-                    .Tooltip("Debug: the floor Enter Pit starts on. Floors 80 and up can show a single Anti Guy.")
-                    .Min(1)
-                    .Max(100)
-                    .DefaultValue(1)
-                    .Format("Start floor: %d")
-            );
+    AddWidget(path, "Start floor (debug)", WIDGET_CVAR_SLIDER_INT)
+        .CVar(CVAR_PIT_START_FLOOR)
+        .Options(
+            IntSliderOptions()
+                .Tooltip("Debug: the floor Enter Pit starts on. Floors 80 and up can show a single Anti Guy.")
+                .Min(1)
+                .Max(100)
+                .DefaultValue(1)
+                .Format("Start floor: %d")
+        );
+
+    AddWidget(path, "Reset Pit rewards (debug)", WIDGET_BUTTON)
+        .Options(
+            ButtonOptions().Tooltip(
+                "Debug: the rest-floor chests pay out their rewards again on the current save. "
+                "Rewards you already received are not taken back."
+            )
+        )
+        .Callback([](WidgetInfo& info) { pit_reward_reset(); });
+
+    AddWidget(path, "Sign: show weenie line (debug)", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_PIT_DEBUG_SIGN_WEENIE)
+        .Options(
+            CheckboxOptions().Tooltip(
+                "Debug: the entrance sign always shows the weenie line, whatever the lowest floor says."
+            )
+        );
+
+    AddWidget(path, "Sign: show impressive line (debug)", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_PIT_DEBUG_SIGN_IMPRESSIVE)
+        .Options(
+            CheckboxOptions().Tooltip(
+                "Debug: the entrance sign always shows the \"Remarkable\" line, whatever the lowest floor says. "
+                "The weenie line wins if both are on."
+            )
+        );
+#endif
+
+    AddWidget(path, "Reset entrance sign to 0", WIDGET_BUTTON)
+        .Options(
+            ButtonOptions().Tooltip(
+                "Sets the lowest floor reached on the sign next to the entrance pipe back to 0. "
+                "This is shared by all save files."
+            )
+        )
+        .Callback([](WidgetInfo& info) { pit_reset_best_floor(); });
+
+    AddWidget(path, "Disable Spin/First/Bump Attack Badges", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_PIT_NO_ATTACK_BADGES)
+        .Options(CheckboxOptions().Tooltip("Only Weenies Disable This Option").DefaultValue(true));
 
     AddWidget(path, "Shop chance", WIDGET_CVAR_SLIDER_INT)
         .CVar(CVAR_PIT_SHOP_CHANCE)

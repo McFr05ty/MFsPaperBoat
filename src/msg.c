@@ -3,6 +3,7 @@
 #include "message_ids.h"
 #include "msg.h"
 #include "holofoil_hero.h"
+#include "strange_sack.h"
 #include "sprite.h"
 
 #include "port/Engine.h"
@@ -1379,6 +1380,9 @@ static u8* load_msg_asset(u32 msgID) {
     u32 index = msgID & 0xFFFF;
     u8* custom = holofoil_hero_message(msgID); // the Holofoil Hero badge has its own text
 
+    if (custom == nullptr) {
+        custom = strange_sack_message(msgID); // and so does the Strange Sack
+    }
     if (custom != nullptr) {
         return custom;
     }

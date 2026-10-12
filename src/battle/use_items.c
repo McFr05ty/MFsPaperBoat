@@ -1,4 +1,5 @@
 #include "common.h"
+#include "inventory.h"
 #include "ld_addrs.h"
 #include "battle/battle.h"
 
@@ -118,9 +119,9 @@ API_CALLABLE(LoadItemScript) {
     s32 i = 0;
     s32* itemPtr;
 
-    while (true) {
-        if (playerData->invItems[i] == itemID) {
-            playerData->invItems[i] = ITEM_NONE;
+    while (i < INVENTORY_MAX_SLOTS) {
+        if (*get_inventory_slot(i) == itemID) {
+            *get_inventory_slot(i) = ITEM_NONE;
             break;
         }
         i++;

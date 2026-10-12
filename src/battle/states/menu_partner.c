@@ -1,6 +1,7 @@
 #include "states.h"
 #include "battle/battle.h"
 #include "battle/battle_menu.h"
+#include "inventory.h"
 
 #include "sprite/npc/Goompa.h"
 #include "sprite/npc/BattleGoombario.h"
@@ -656,20 +657,20 @@ void btl_state_update_partner_menu(void) {
         break;
     case BTL_SUBSTATE_ITEMS_BUILD_MENU:
         popupIndex = 0;
-        for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
+        for (i = 0; i < get_inventory_capacity(); i++) {
             ItemData* item;
             HudScript** hudScript;
-            if (playerData->invItems[i] == ITEM_NONE) {
+            if ((*get_inventory_slot(i)) == ITEM_NONE) {
                 continue;
             }
-            item = &gItemTable[playerData->invItems[i]];
+            item = &gItemTable[(*get_inventory_slot(i))];
             hudScript = &gItemHudScripts[item->hudElemID].enabled;
 
             if (!(item->typeFlags & ITEM_TYPE_FLAG_BATTLE_USABLE)) {
                 continue;
             }
             popupMenu->ptrIcon[popupIndex] = hudScript[0];
-            popupMenu->userIndex[popupIndex] = playerData->invItems[i];
+            popupMenu->userIndex[popupIndex] = (*get_inventory_slot(i));
             popupMenu->enabled[popupIndex] = true;
             popupMenu->nameMsg[popupIndex] = item->nameMsg;
             popupMenu->descMsg[popupIndex] = item->shortDescMsg;

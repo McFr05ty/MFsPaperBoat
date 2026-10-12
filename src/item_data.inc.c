@@ -2250,15 +2250,15 @@ ItemData gItemTable[] = {
         .potencyA = 0,
         .potencyB = 0,
     },
-    {   // 0x07F: UnusedPrisonKey3
-        .nameMsg = MSG_ItemName_PrisonKey,
-        .fullDescMsg = MSG_ItemFullDesc_PrisonKey,
-        .shortDescMsg = MSG_ItemShortDesc_PrisonKey,
-        .hudElemID = 115, // HES_Item_PeachKey
+    {   // 0x07F: UnusedPrisonKey3, now the Strange Sack (see strange_sack.h)
+        .nameMsg = STRANGE_SACK_MSG_NAME,
+        .fullDescMsg = STRANGE_SACK_MSG_FULL,
+        .shortDescMsg = STRANGE_SACK_MSG_SHORT,
+        .hudElemID = 112, // HES_Item_Mailbag
         .sellValue = -1,
         .sortValue = 0,
         .targetFlags = TARGET_FLAG_PLAYER,
-        .typeFlags = ITEM_TYPE_FLAG_WORLD_USABLE | ITEM_TYPE_FLAG_KEY | ITEM_TYPE_FLAG_ENTITY_FULLSIZE,
+        .typeFlags = ITEM_TYPE_FLAG_KEY | ITEM_TYPE_FLAG_ENTITY_FULLSIZE,
         .moveID = MOVE_NONE,
         .potencyA = 0,
         .potencyB = 0,
@@ -6155,7 +6155,7 @@ intptr_t* gItemEntityScripts[] = {
     IES_GoldCard,
     IES_Placeholder,
     IES_Placeholder,
-    IES_Placeholder,
+    IES_Mailbag, // 0x07F: Strange Sack (see strange_sack.h)
     IES_FireFlower,
     IES_SnowmanDoll,
     IES_ThunderRage,

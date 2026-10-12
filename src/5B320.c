@@ -5,6 +5,7 @@
 #include "world/world.h"
 #include "assets/ui.h"
 #include "holofoil_hero.h"
+#include "strange_sack.h"
 
 #if !VERSION_JP
 #define MSG_FullDesc_32 0

@@ -7,6 +7,7 @@
 
 #include "sprite/npc/AlbinoDino.h"
 #include "sprite/npc/Bandit.h"
+#include "sprite/npc/BattleClubba.h"
 #include "sprite/npc/Blooper.h"
 #include "sprite/npc/Bobomb.h"
 #include "sprite/npc/BonyBeetle.h"
@@ -30,6 +31,7 @@
 #include "sprite/npc/HurtPlant.h"
 #include "sprite/npc/KentCKoopa.h"
 #include "sprite/npc/KoopaTroopa.h"
+#include "sprite/npc/Koopatrol.h"
 #include "sprite/npc/Lakitu.h"
 #include "sprite/npc/LargePiranha.h"
 #include "sprite/npc/LavaBubble.h"
@@ -1543,6 +1545,24 @@ static const PitLook sPitLooks[] = {
         .anim_E = ANIM_StoneChomp_Still,
         .anim_F = ANIM_StoneChomp_Still,
     },
+    { // SWOOPER_ANIMS (the Swoopula's set in the regular colors; the regular Swooper only appears in battle)
+        .idle = ANIM_Swooper_Anim1B,
+        .walk = ANIM_Swooper_Anim02,
+        .run = ANIM_Swooper_Anim02,
+        .chase = ANIM_Swooper_Anim02,
+        .anim_4 = ANIM_Swooper_Anim1B,
+        .anim_5 = ANIM_Swooper_Anim1B,
+        .death = ANIM_Swooper_Anim04,
+        .hit = ANIM_Swooper_Anim15,
+        .anim_8 = ANIM_Swooper_Anim00,
+        .anim_9 = ANIM_Swooper_Anim00,
+        .anim_A = ANIM_Swooper_Anim01,
+        .anim_B = ANIM_Swooper_Anim01,
+        .anim_C = ANIM_Swooper_Anim01,
+        .anim_D = ANIM_Swooper_Anim01,
+        .anim_E = ANIM_Swooper_Anim01,
+        .anim_F = ANIM_Swooper_Anim01,
+    },
     { // SWOOPULA_ANIMS
         .idle = ANIM_Swooper_Gray_Anim1B,
         .walk = ANIM_Swooper_Gray_Anim02,
@@ -1663,6 +1683,14 @@ static Battle* pit_find_battle(int battleID) {
     return &(*area->battles)[battleID & 0xFF];
 }
 
+// A few enemies use a different sprite in battle than their overworld NPC does. This maps the battle idle animation
+// to the idle animation of the overworld row to use.
+static const s32 sPitBattleAliases[][2] = {
+    { ANIM_BattleClubba_Anim01,       ANIM_WorldClubba_Anim02 },
+    { ANIM_BattleClubba_Frost_Anim01, ANIM_WorldClubba_Frost_Anim02 },
+    { ANIM_Koopatrol_Anim01,          ANIM_WorldKoopatrol_Anim01 },
+};
+
 // The animation a battle part plays when nothing is wrong with it.
 static s32 pit_part_idle_anim(const ActorPartBlueprint* part) {
     const s32* anims = part->idleAnimations;
@@ -1722,6 +1750,12 @@ int pit_enemy_look(int battleID, int* anims, int* height, int* radius, int* leve
         return 0;
     }
 
+    for (i = 0; i < (s32) ARRAY_COUNT(sPitBattleAliases); i++) {
+        if (sPitBattleAliases[i][0] == idle) {
+            idle = sPitBattleAliases[i][1];
+            break;
+        }
+    }
     for (i = 0; i < (s32) ARRAY_COUNT(sPitLooks); i++) {
         if (sPitLooks[i].idle == idle) {
             pick = i;

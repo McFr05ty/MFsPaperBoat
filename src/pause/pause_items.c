@@ -1,5 +1,6 @@
 #include "pause/pause_common.h"
 #include "message_ids.h"
+#include "inventory.h"
 
 void pause_items_draw_contents(MenuPanel* menu, s32 baseX, s32 baseY, s32 width, s32 height, s32 opacity, s32 darkening);
 void pause_items_init(MenuPanel* panel);
@@ -359,9 +360,9 @@ void pause_items_load_items(s32 invItems) {
 
     D_802705D0 = 0;
     if (invItems == true) {
-        for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-            if (playerData->invItems[i] != ITEM_NONE) {
-                gPauseItemsItemIDs[totalItems] = playerData->invItems[i];
+        for (i = 0; i < get_inventory_capacity(); i++) {
+            if ((*get_inventory_slot(i)) != ITEM_NONE) {
+                gPauseItemsItemIDs[totalItems] = (*get_inventory_slot(i));
                 totalItems++;
             }
         }

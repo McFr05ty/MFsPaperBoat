@@ -1,46 +1,76 @@
-# Pit of 100 Trials (design draft)
+# Pit of 100 Trials
 
-Status: design only, nothing is implemented. Items marked (?) are unverified assumptions about the engine.
+A 100 floor dungeon, entered from a pipe in Toad Town Tunnels. This file describes how it works now. Source files are in `src/pit/`, with the setting names and shared functions in `include/pit_of_trials.h`.
 
-## Summary
+## A run
 
-A 100 floor dungeon entered from a pipe in Toad Town Tunnels (TIK_02), near the chest. Floors 1-99 are battles. Floors 10, 20, ... 90 are rest floors. Floor 100 is the only boss, an Electro Super Blooper.
+- The entrance is a blue pipe in the Blooper room (TIK_02). Beside it are a sign, a save block and a heart block. Going down the pipe starts a run at floor 1. Nothing resumes.
+- You can not save inside the Pit. Game over loads your last save, as usual.
+- Floors 1-99 are battles, except every tenth floor (10, 20, ... 90), which is a rest room. That makes 90 battle floors, 9 rest floors and the boss on floor 100.
+- Each floor has a pipe down to the next one. Rest rooms also have a return pipe back to the tunnels, and everything you earned stays with you.
+- The entrance sign shows "Lowest floor reached". It is stored in the config, so all save files share it.
 
-## Decided
+## Battle floors
 
-- Every run starts at floor 1. Nothing resumes.
-- No saving inside the pit. The only save block is outside it.
-- Death is a normal loss and nothing from the run is kept. (?) Game over reloads the last save.
-- Leaving through a rest floor keeps everything earned so far.
-- Difficulty follows the chapters: the 90 battle floors are blended across 8 chapters, about 11 floors each, with neighbouring chapters mixed near the boundaries.
-- Rest floors have a way to leave, a chest with a Jelly Ultra (temporary, reward pool undecided), and a chance of a shop NPC or a floor-skip NPC.
-- Shop: healing and battle items only, random stock per visit, prices rise with depth.
-- Skip NPC: skips 3 floors for 30 coins or 5 floors for 50 coins.
-- Floor 100: Electro Super Blooper. It uses the Super Blooper model with the Electro Blooper behaviour and raised stats.
-- The pit does not depend on the other custom features. It has its own files, setting and menu section, and works with all of them off.
+- The overworld enemy looks like the first enemy of the battle it starts (`pit_enemy.c` has a look for each enemy).
+- The battle is chosen from every battle in the game by a difficulty score, so the enemies climb from about level 5 on floor 1 to about level 30 on floor 99, with neighbouring chapters mixed together (`pit_battles.c`, `pit_pick_battle` in `pit.c`).
+- From floor 80, one fight in twenty is a single Anti Guy.
+- Winning raises the pipe to the next floor.
 
-## Proposed, to confirm
+## Rest floors
 
-- Price formula: base price x (1 + floor / 25), rounded.
-- A skip never jumps past a rest floor or floor 100.
-- The other custom features still apply inside the pit when they are on. Hard Mode multiplies the pit's own scaling, Super Guard and the star point floor work as usual. Rare Enemies do not roll, because every pit fight is a scripted battle.
-- The pit uses Mario's normal coins and inventory.
-- Battles start from a hidden Pit Master NPC in TIK_02 through the normal encounter system, and TIK_02 is the rest room. (?)
+- **Chest.** Each rest floor has a fixed reward, paid out once per save file. After that the chest holds coins equal to the floor number.
 
-## Open questions
+  | Floor | Reward |
+  | --- | --- |
+  | 10 | HP Plus |
+  | 20 | Happy Heart |
+  | 30 | FP Plus |
+  | 40 | Strange Sack (key item) |
+  | 50 | Defend Plus |
+  | 60 | Power Plus |
+  | 70 | Damage Dodge |
+  | 80 | Happy Flower |
+  | 90 | Flower Saver |
 
-- Reward pool for rest floors, and a reward for floor 100.
-- Exact pipe position, and how the pipe is created without editing a large upstream file.
-- Whether the hybrid boss can reuse the Electro Blooper scripts with the Super Blooper sprite. (?)
-- Whether repeated scripted battles from one NPC script work. (?)
+  The badges are the spare copies the game never hands out, so they can not clash with ones found in the story.
+- **Shop.** Rip Cheato sets up shop on a rest floor with a chance of 33% (Pit menu slider). He sells 3 random items from a pool of healing and battle items. The price is the item's normal price plus 5% for each floor.
+- **The Mover** (see below) can be here too.
 
-## Stages
+## The Mover
 
-1. Prototype: one battle from the pipe through the Pit Master NPC, and a return to the map.
-2. Floor chain with chapter-blended enemies.
-3. Rest floors, chest, and leaving.
-4. Shop and skip NPC.
-5. Floor 100 boss.
-6. Polish, exemptions from other features, release test.
+On any floor from 1 to 90 the Mover can be there, with a default chance of 3% (Pit menu slider, at most 10%). On a battle floor he takes the place of the enemy. He skips 3 floors for 30 coins or 5 floors for 50 coins, plus 5% of that price for each floor after the first. A skip never goes past floor 99.
 
-Each stage gets a debug test and a release test before it ships. The Super Guard crash only appeared in release.
+## The boss
+
+Floor 100 is an Electro Super Blooper: an Electro Blooper as big as a Super Blooper, with 150 HP and attacks that do 4 times as much damage. When it falls, the return pipe rises and a chest appears. The chest holds the **Holofoil Hero** badge (an Ultra Jelly if Mario already has it, a Dried Shroom after a weenie run).
+
+## Challenge options
+
+- **Disable Spin/First/Bump Attack Badges** is on by default, tooltip "Only Weenies Disable This Option". While it is on, those three badges do nothing inside the Pit. Outside the Pit they work as normal.
+- If the option is off on any floor of a run (checked every frame), that is a **weenie run**. The boss chest holds a Dried Shroom, and if the run set the lowest floor, the sign adds "That would be impressive if you weren't such a weenie."
+- The sign adds "Your Paper Killing Skills are Remarkable!" when the lowest floor was reached on a run where all of these held on every floor: Hard Mode on with at least 2.0x health and 1.5x attack; Action Command Difficulty and Block Window at "Original"; Super Guard off or at 1 frame; the badge option above on; the Mover chance at 3% or lower and the shop chance at 33% or lower.
+- Both sign lines belong to the run that set the lowest floor. A later record on a run that does not qualify replaces them. The "Reset entrance sign to 0" button in the menu clears the record and both lines.
+
+## Menu (MF's Enhancements > Pit of Trials)
+
+Always there: Reset entrance sign to 0, Disable Spin/First/Bump Attack Badges, Shop chance, Mover chance.
+
+Debug builds only: Enter Pit (prototype), Start floor, Reset Pit rewards, Sign: show weenie line, Sign: show impressive line. Release builds ignore a start floor left in the config. A run that starts above floor 1 does not count towards the lowest floor.
+
+## How it is built
+
+- The Pit rooms are extra maps added to the Toad Town Tunnels area when the Pit is first entered (`pit.c`). The battle and rest rooms copy the shape of TIK_18 and the boss room copies TIK_02.
+- The Rooms use three spare game flags (`GF_Unused_EVT_0A`, `0B`, `0C`) for the pipes and the chest. They are cleared when a room loads and when the Pit is left.
+- `pit_rewards.c`: rest-floor chests. The claimed rewards are kept in the save file (`pitRewardsClaimed`).
+- `pit_shop.c`, `pit_mover.c`, `pit_text.c`: the NPCs, with their speech and menus built in memory.
+- `pit_boss.c`, `pit_boss_actor.c`: floor 100. The extra damage is in `src/port/enhancements/gameplay/PitOfTrials.cpp`.
+- `pit_sign.c`: the floor sign and the entrance sign.
+- The Strange Sack (`strange_sack.c`) and the Holofoil Hero (`holofoil_hero.c`) are separate small features that the Pit hands out.
+
+## Not yet checked
+
+- The chest reward on every rest floor, and that each pays out only once per save.
+- The weenie and Remarkable sign lines, and the Dried Shroom prize.
+- The Swooper, Clubba and Koopatrol overworld looks.
+- The Pit in a release build. The Super Guard crash only appeared in release, so every new feature needs a release test.

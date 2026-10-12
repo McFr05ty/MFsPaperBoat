@@ -87,9 +87,13 @@ EvtScript N(EVS_NpcIdle_Blooper) = {
 };
 
 // The boss chest holds the Holofoil Hero badge. Mario only needs one, so when he already has it the chest holds an
-// Ultra Jelly instead.
+// Ultra Jelly instead. A run that turned "Disable Attack Badges" off on any floor only earns a Dried Shroom.
 API_CALLABLE(N(PickReward)) {
-    script->varTable[0] = has_item(HOLOFOIL_HERO_ITEM) ? ITEM_JELLY_ULTRA : HOLOFOIL_HERO_ITEM;
+    if (pit_run_is_weenie()) {
+        script->varTable[0] = ITEM_DRIED_SHROOM;
+    } else {
+        script->varTable[0] = has_item(HOLOFOIL_HERO_ITEM) ? ITEM_JELLY_ULTRA : HOLOFOIL_HERO_ITEM;
+    }
     return ApiStatus_DONE2;
 }
 

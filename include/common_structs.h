@@ -376,7 +376,9 @@ typedef struct PlayerData {
     /* 0x338 */ u32 smashGameTotal; /* all-time winnings, max = 99999 */
     /* 0x33C */ u16 smashGameRecord;
     /* 0x33E */ char pad_33E[2];
-    /* 0x340 */ char reserved[0xE8]; // unused
+    /* 0x340 */ s16 invItemsExtra[10]; // inventory slots 10-19, usable once Mario owns the Strange Sack (see strange_sack.h)
+    /* 0x354 */ u16 pitRewardsClaimed; // Pit of Trials: bit n is set once the chest on rest floor (n + 1) * 10 has paid out its reward
+    /* 0x356 */ char reserved[0xD2]; // unused
 } PlayerData; // size = 0x428
 
 typedef struct Trigger {

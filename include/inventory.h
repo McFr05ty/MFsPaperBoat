@@ -26,6 +26,18 @@ s32 count_item(s32 itemID);
 /// Returns whether the player has `itemID` as an equipped badge.
 b32 is_badge_equipped(s32 itemID);
 
+/// Inventory slots Mario always has, and the most he can have (with the Strange Sack).
+#define INVENTORY_BASE_SLOTS 10
+#define INVENTORY_MAX_SLOTS 20
+
+/// Returns how many consumable slots Mario can use right now: INVENTORY_BASE_SLOTS, or INVENTORY_MAX_SLOTS once he owns
+/// the Strange Sack. Loop over this instead of ARRAY_COUNT(gPlayerData.invItems).
+s32 get_inventory_capacity(void);
+
+/// Returns the address of consumable slot `idx` (0 to INVENTORY_MAX_SLOTS - 1). The first ten slots are
+/// gPlayerData.invItems, the rest are gPlayerData.invItemsExtra, so they are not one array.
+s16* get_inventory_slot(s32 idx);
+
 /// Returns the number of consumables in player inventory.
 s32 get_consumables_count(void);
 

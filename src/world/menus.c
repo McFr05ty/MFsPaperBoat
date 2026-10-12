@@ -3,6 +3,7 @@
 #include "world/partners.h"
 #include "macros.h"
 #include "common.h"
+#include "inventory.h"
 #include "sprite.h"
 #include "game_modes.h"
 #include "pause/pause_common.h"
@@ -163,8 +164,8 @@ s32 setup_item_popup(PopupMenu* menu) {
     s32 optionCount = 0;
     s32 i;
 
-    for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-        s32 itemIdx = playerData->invItems[i];
+    for (i = 0; i < get_inventory_capacity(); i++) {
+        s32 itemIdx = *get_inventory_slot(i);
 
         if (itemIdx != 0) {
             ItemData* item = &gItemTable[itemIdx];

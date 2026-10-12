@@ -5,6 +5,7 @@
 #include "mapfs/tik_18_shape.h"
 #include "mapfs/tik_18_hit.h"
 #include "pit_of_trials.h"
+#include "pit_text.h"
 
 #define NAMESPACE pit_rest
 
@@ -54,7 +55,64 @@ EvtScript N(EVS_ReturnPipeExit) = {
     End
 };
 
-EvtScript N(EVS_OpenChest) = EVT_OPEN_CHEST(ITEM_JELLY_ULTRA, GF_Unused_EVT_0C);
+// The chest on a rest floor. Its reward is paid out the first time on a save file (src/pit/pit_rewards.c). Afterwards it
+// holds coins instead.
+// LVar0 = the item (ITEM_NONE if the reward was already taken), LVar1 = the coins for then.
+API_CALLABLE(N(PickReward)) {
+    s32 floor = pit_current_floor();
+
+    script->varTable[0] = pit_reward_take(floor);
+    script->varTable[1] = pit_reward_consolation(floor);
+    return ApiStatus_DONE2;
+}
+
+// "Nothing new in here. / Just [var 0] coins." Built in memory, with the number as message variable 0.
+static u8 N(ConsolationMessage)[80];
+
+API_CALLABLE(N(PrepareConsolation)) {
+    Bytecode* args = script->ptrReadPos;
+    s32 coins = evt_get_variable(script, *args++);
+    u8* msg = N(ConsolationMessage);
+    s32 pos = 0;
+
+    msg[pos++] = MSG_CHAR_READ_STYLE;
+    msg[pos++] = MSG_STYLE_SIGN;
+    pos = pit_text_put(msg, pos, "Nothing new in here.\nJust ");
+    msg[pos++] = MSG_CHAR_READ_FUNCTION;
+    msg[pos++] = MSG_READ_FUNC_VAR;
+    msg[pos++] = 0;
+    pos = pit_text_put(msg, pos, " coins.");
+    msg[pos++] = MSG_CHAR_READ_WAIT;
+    msg[pos++] = MSG_CHAR_READ_END;
+
+    set_message_int_var(coins, 0);
+    return ApiStatus_DONE2;
+}
+
+EvtScript N(EVS_Chest_Consolation) = {
+    Call(DisablePlayerInput, true)
+    Call(N(PrepareConsolation), LVarB)
+    Call(ShowMessageAtScreenPos, Ref(N(ConsolationMessage)), 160, 40)
+    Call(AddCoin, LVarB)
+    Wait(15)
+    Call(DisablePlayerInput, false)
+    Return
+    End
+};
+
+EvtScript N(EVS_OpenChest) = {
+    Call(N(PickReward))
+    Set(LVarA, LVar0)
+    Set(LVarB, LVar1)
+    Set(GF_Unused_EVT_0C, true)
+    IfNe(LVarA, ITEM_NONE)
+        ExecWait(N(EVS_Chest_GetItem))
+    Else
+        ExecWait(N(EVS_Chest_Consolation))
+    EndIf
+    Return
+    End
+};
 
 EvtScript N(EVS_Main) = {
     Set(GB_WorldLocation, LOCATION_TOAD_TOWN_TUNNELS)

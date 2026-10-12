@@ -1,4 +1,6 @@
 #include "inventory.h"
+#include "strange_sack.h"
+#include "pit_of_trials.h"
 #include "higher_level_cap.h"
 #include "hud_element.h"
 #include "dx/config.h"
@@ -116,9 +118,10 @@ void clear_player_data(void) {
         playerData->badges[i] = ITEM_NONE;
     }
 
-    for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-        playerData->invItems[i] = ITEM_NONE;
+    for (i = 0; i < INVENTORY_MAX_SLOTS; i++) {
+        *get_inventory_slot(i) = ITEM_NONE;
     }
+    playerData->pitRewardsClaimed = 0;
 
     for (i = 0; i < ARRAY_COUNT(playerData->equippedBadges); i++) {
         playerData->equippedBadges[i] = ITEM_NONE;
@@ -201,17 +204,17 @@ s32 add_item(s32 itemID) {
     // handle consumables
     sort_consumables();
 
-    for (idx = 0; idx < ARRAY_COUNT(gPlayerData.invItems); idx++) {
-        if (gPlayerData.invItems[idx] == ITEM_NONE) {
+    for (idx = 0; idx < get_inventory_capacity(); idx++) {
+        if ((*get_inventory_slot(idx)) == ITEM_NONE) {
             break;
         }
     }
 
-    if (idx == ARRAY_COUNT(gPlayerData.invItems)) {
+    if (idx == get_inventory_capacity()) {
         return -1;
     }
 
-    gPlayerData.invItems[idx] = itemID;
+    (*get_inventory_slot(idx)) = itemID;
     return idx;
 }
 
@@ -258,17 +261,17 @@ s32 remove_item(s32 itemID) {
     }
 
     // handle consumables
-    for (idx = 0; idx < ARRAY_COUNT(gPlayerData.invItems); idx++) {
-        if (gPlayerData.invItems[idx] == itemID) {
+    for (idx = 0; idx < get_inventory_capacity(); idx++) {
+        if ((*get_inventory_slot(idx)) == itemID) {
             break;
         }
     }
 
-    if (idx == ARRAY_COUNT(gPlayerData.invItems)) {
+    if (idx == get_inventory_capacity()) {
         return -1;
     }
 
-    gPlayerData.invItems[idx] = ITEM_NONE;
+    (*get_inventory_slot(idx)) = ITEM_NONE;
     sort_consumables();
     return idx;
 }
@@ -307,13 +310,13 @@ s32 find_item(s32 itemID) {
     }
 
     // handle consumables
-    for (idx = 0; idx < ARRAY_COUNT(gPlayerData.invItems); idx++) {
-        if (gPlayerData.invItems[idx] == itemID) {
+    for (idx = 0; idx < get_inventory_capacity(); idx++) {
+        if ((*get_inventory_slot(idx)) == itemID) {
             break;
         }
     }
 
-    if (idx == ARRAY_COUNT(gPlayerData.invItems)) {
+    if (idx == get_inventory_capacity()) {
         return -1;
     }
     return idx;
@@ -346,8 +349,8 @@ s32 count_item(s32 itemID) {
     }
 
     // handle consumables
-    for (idx = 0; idx < ARRAY_COUNT(gPlayerData.invItems); idx++) {
-        if (gPlayerData.invItems[idx] == itemID) {
+    for (idx = 0; idx < get_inventory_capacity(); idx++) {
+        if ((*get_inventory_slot(idx)) == itemID) {
             sum++;
         }
     }
@@ -378,8 +381,8 @@ b32 has_item(s32 itemID) {
     }
 
     // handle consumables
-    for (idx = 0; idx < ARRAY_COUNT(gPlayerData.invItems); idx++) {
-        if (gPlayerData.invItems[idx] == itemID) {
+    for (idx = 0; idx < get_inventory_capacity(); idx++) {
+        if ((*get_inventory_slot(idx)) == itemID) {
             return true;
         }
     }
@@ -420,20 +423,39 @@ b32 is_badge_equipped(s32 itemID) {
     return false;
 }
 
+s32 get_inventory_capacity(void) {
+    s32 i;
+
+    // Looks at the key items directly, so it does not depend on the item table.
+    for (i = 0; i < ARRAY_COUNT(gPlayerData.keyItems); i++) {
+        if (gPlayerData.keyItems[i] == STRANGE_SACK_ITEM) {
+            return INVENTORY_MAX_SLOTS;
+        }
+    }
+    return INVENTORY_BASE_SLOTS;
+}
+
+s16* get_inventory_slot(s32 idx) {
+    if (idx < INVENTORY_BASE_SLOTS) {
+        return &gPlayerData.invItems[idx];
+    }
+    return &gPlayerData.invItemsExtra[idx - INVENTORY_BASE_SLOTS];
+}
+
 /// Bubbles up player inventory items such that all ITEM_NONE values are at the bottom.
 void sort_consumables(void) {
     s32 i, j;
 
-    for (i = ARRAY_COUNT(gPlayerData.invItems) - 2; i >= 0; i--) {
+    for (i = get_inventory_capacity() - 2; i >= 0; i--) {
         // leave ITEM_NONE at the end of the list alone
-        if (gPlayerData.invItems[i] == ITEM_NONE) {
+        if ((*get_inventory_slot(i)) == ITEM_NONE) {
             continue;
         }
         // swap any other ITEM_NONE to the end of the list
-        for (j = ARRAY_COUNT(gPlayerData.invItems) - 1; i < j; j--) {
-            if (gPlayerData.invItems[j] == ITEM_NONE) {
-                gPlayerData.invItems[j] = gPlayerData.invItems[i];
-                gPlayerData.invItems[i] = ITEM_NONE;
+        for (j = get_inventory_capacity() - 1; i < j; j--) {
+            if ((*get_inventory_slot(j)) == ITEM_NONE) {
+                (*get_inventory_slot(j)) = (*get_inventory_slot(i));
+                (*get_inventory_slot(i)) = ITEM_NONE;
                 break;
             }
         }
@@ -444,8 +466,8 @@ s32 get_consumables_count(void) {
     s32 idx;
     s32 sum = 0;
 
-    for (idx = 0; idx < ARRAY_COUNT(gPlayerData.invItems); idx++) {
-        if (gPlayerData.invItems[idx] != ITEM_NONE) {
+    for (idx = 0; idx < get_inventory_capacity(); idx++) {
+        if ((*get_inventory_slot(idx)) != ITEM_NONE) {
             sum++;
         }
     }
@@ -454,7 +476,7 @@ s32 get_consumables_count(void) {
 }
 
 s32 get_consumables_empty(void) {
-    return ARRAY_COUNT(gPlayerData.invItems) - get_consumables_count();
+    return get_inventory_capacity() - get_consumables_count();
 }
 
 s32 get_stored_count(void) {
@@ -1886,6 +1908,13 @@ s32 is_ability_active(s32 ability) {
     }
 
     if (gGameStatusPtr->peachFlags & PEACH_FLAG_IS_PEACH) {
+        return 0;
+    }
+
+    // Pit of Trials: the overworld attack badges are switched off (the "Disable Attack Badges" option).
+    if ((ability == ABILITY_SPIN_ATTACK || ability == ABILITY_FIRST_ATTACK || ability == ABILITY_BUMP_ATTACK)
+        && pit_attack_badges_blocked())
+    {
         return 0;
     }
 

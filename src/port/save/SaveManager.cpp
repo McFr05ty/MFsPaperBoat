@@ -124,6 +124,17 @@ SaveData* ConvertJSON_to_SaveData(nlohmann::json jsonSaveFile) {
         saveData->player.invItems[ii] = jsonInvItems[ii];
     }
 
+    // Saves made before the Strange Sack have no extra slots or Pit rewards. Those stay zero.
+    if (jsonPlayer.contains("invItemsExtra")) {
+        ordered_json jsonInvItemsExtra = jsonPlayer["invItemsExtra"];
+        for (int ii = 0; ii < MAX_INVITEMS_EXTRA && ii < (int)jsonInvItemsExtra.size(); ii++) {
+            saveData->player.invItemsExtra[ii] = jsonInvItemsExtra[ii];
+        }
+    }
+    if (jsonPlayer.contains("pitRewardsClaimed")) {
+        saveData->player.pitRewardsClaimed = jsonPlayer["pitRewardsClaimed"];
+    }
+
     ordered_json jsonStoredItems = jsonPlayer["storedItems"];
     for (int si = 0; si < MAX_STOREDITEMS; si++) {
         saveData->player.storedItems[si] = jsonStoredItems[si];
@@ -327,6 +338,13 @@ ordered_json ConvertSaveData_to_JSON(SaveData* saveData) {
         jsonInvItems.push_back(saveData->player.invItems[ii]);
     }
     jsonPlayerData["invItems"] = jsonInvItems;
+
+    ordered_json jsonInvItemsExtra = ordered_json::array();
+    for (int ii = 0; ii < MAX_INVITEMS_EXTRA; ii++) {
+        jsonInvItemsExtra.push_back(saveData->player.invItemsExtra[ii]);
+    }
+    jsonPlayerData["invItemsExtra"] = jsonInvItemsExtra;
+    jsonPlayerData["pitRewardsClaimed"] = saveData->player.pitRewardsClaimed;
 
     ordered_json jsonStoredItems = ordered_json::array();
     for (int si = 0; si < MAX_STOREDITEMS; si++) {

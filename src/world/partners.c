@@ -5,6 +5,7 @@
 #include "ld_addrs.h"
 #include "npc.h"
 #include "hud_element.h"
+#include "inventory.h"
 
 #include "partner/goombario.h"
 #include "sprite/npc/WorldGoombario.h"
@@ -482,7 +483,7 @@ s32 use_consumable(s32 invSlot) {
     Evt* script;
 
     D_8010CD20 = invSlot;
-    invSlot = gPlayerData.invItems[invSlot];
+    invSlot = *get_inventory_slot(invSlot);
     dma_copy(UseItemDmaArgs.dmaStart, UseItemDmaArgs.dmaEnd, world_use_item_VRAM);
     script = start_script(UseItemDmaArgs.main, EVT_PRIORITY_1, 0);
     script->varTable[10] = invSlot;
@@ -490,7 +491,7 @@ s32 use_consumable(s32 invSlot) {
 }
 
 void remove_consumable(void) {
-    gPlayerData.invItems[D_8010CD20] = ITEM_NONE;
+    *get_inventory_slot(D_8010CD20) = ITEM_NONE;
     sort_consumables();
 }
 

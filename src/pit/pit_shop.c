@@ -46,7 +46,6 @@ static const s16 N(Pool)[] = {
     ITEM_STOP_WATCH,
     ITEM_DIZZY_DIAL,
     ITEM_SLEEPY_SHEEP,
-    ITEM_HUSTLE_DRINK,
     ITEM_SUPER_SODA,
     ITEM_TASTY_TONIC,
     ITEM_MAPLE_SYRUP,
@@ -74,7 +73,7 @@ static u8 N(MenuMsg)[256];
 
 // Decides if the shop is here on this rest floor (LVar0 = true or false), and sets up the stock and the messages.
 API_CALLABLE(N(Roll)) {
-    s32 poolSize = ARRAY_COUNT(N(Pool));
+    s32 poolSize = 0;
     s32 order[ARRAY_COUNT(N(Pool))];
     s32 floor = pit_current_floor();
     s32 chance = CVarGetInteger(CVAR_PIT_SHOP_CHANCE, PIT_SHOP_DEFAULT_CHANCE); // 0-100, from the Pit menu
@@ -85,8 +84,11 @@ API_CALLABLE(N(Roll)) {
         return ApiStatus_DONE2;
     }
 
-    for (i = 0; i < poolSize; i++) {
-        order[i] = i;
+    // Only items that have a name can be sold. A few unused items have no text, which shows up as a blank name.
+    for (i = 0; i < ARRAY_COUNT(N(Pool)); i++) {
+        if (gItemTable[N(Pool)[i]].nameMsg != MSG_NONE) {
+            order[poolSize++] = i;
+        }
     }
     for (i = 0; i < PIT_SHOP_STOCK; i++) {
         s32 base;

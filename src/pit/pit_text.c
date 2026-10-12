@@ -21,6 +21,10 @@ s32 pit_text_put(u8* dst, s32 pos, const char* text) {
             dst[pos++] = MSG_CHAR_COLON;
         } else if (c == '-') {
             dst[pos++] = MSG_CHAR_MINUS;
+        } else if (c == '\'') {
+            dst[pos++] = MSG_CHAR_APOSTROPHE;
+        } else if (c == '!') {
+            dst[pos++] = MSG_CHAR_EXCLAMTION;
         } else if (c == '\n') {
             dst[pos++] = MSG_CHAR_READ_ENDL;
         }

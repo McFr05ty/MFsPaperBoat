@@ -6,7 +6,7 @@
 // Helpers for the Pit NPCs (the shop and the Mover): they build their speech and menus in memory from plain text,
 // because the game's message codes are not ASCII.
 
-// Writes text (letters, digits, space . ? : - and \n) as message codes at dst[pos]. Returns the new write position.
+// Writes text (letters, digits, space . ? ! : - ' and \n) as message codes at dst[pos]. Returns the new write position.
 s32 pit_text_put(u8* dst, s32 pos, const char* text);
 
 // Builds a whole speech message in dst. The text is shown, then:

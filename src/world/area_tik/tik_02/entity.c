@@ -32,9 +32,9 @@ EvtScript N(EVS_MakeEntities) = {
     // The sign beside the entrance pipe: the Pit's name and the deepest floor reached.
     Call(MakeEntity, Ref(Entity_Signpost), 125, -10, -60, 0, MAKE_ENTITY_END)
     Call(AssignScript, Ref(pit_sign_EVS_ReadEntranceSign))
-        // The save block and heart block next to the Pit entrance.
-        Call(MakeEntity, Ref(Entity_SavePoint), 100, 50, -60, 0, MAKE_ENTITY_END)
-        Call(MakeEntity, Ref(Entity_HeartBlock), 235, 50, -60, 0, MAKE_ENTITY_END)
+    // The save block and heart block next to the Pit entrance.
+    Call(MakeEntity, Ref(Entity_SavePoint), 70, 50, -60, 0, MAKE_ENTITY_END)
+    Call(MakeEntity, Ref(Entity_HeartBlock), 235, 50, -60, 0, MAKE_ENTITY_END)
     Return
     End
 };

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "inventory.h"
 #include "nu/nusys.h"
 #include "effects.h"
 #include "battle/battle.h"
@@ -610,15 +611,15 @@ void btl_init_menu_items(void) {
     battleStatus->menuStatus[0] = 0;
     hasValidItem = false;
 
-    for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-        s16 itemID = playerData->invItems[i];
+    for (i = 0; i < get_inventory_capacity(); i++) {
+        s16 itemID = (*get_inventory_slot(i));
 
         if (itemID != ITEM_NONE) {
             ItemData* itemData = &gItemTable[itemID];
 
             if (itemData->typeFlags & ITEM_TYPE_FLAG_BATTLE_USABLE) {
                 battleStatus->moveCategory = BTL_MENU_TYPE_ITEMS;
-                battleStatus->moveArgument = playerData->invItems[i];
+                battleStatus->moveArgument = (*get_inventory_slot(i));
                 battleStatus->curTargetListFlags = itemData->targetFlags;
                 create_current_pos_target_list(player);
 

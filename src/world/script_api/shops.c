@@ -390,13 +390,13 @@ void shop_open_item_select_popup(s32 mode) {
     switch (mode) {
         case ITEM_POPUP_SELL:
             popupType = POPUP_MENU_SELL_ITEM;
-            numItemSlots = ARRAY_COUNT(gPlayerData.invItems);
-            itemArray = gPlayerData.invItems;
+            numItemSlots = get_inventory_capacity();
+            itemArray = NULL; // the inventory is two arrays, so it is read with get_inventory_slot
             break;
         case ITEM_POPUP_CHECK:
             popupType = POPUP_MENU_CHECK_ITEM;
-            numItemSlots = ARRAY_COUNT(gPlayerData.invItems);
-            itemArray = gPlayerData.invItems;
+            numItemSlots = get_inventory_capacity();
+            itemArray = NULL;
             break;
         case ITEM_POPUP_CLAIM:
         default:
@@ -409,7 +409,7 @@ void shop_open_item_select_popup(s32 mode) {
     numEntries = 0;
 
     for (i = 0; i < numItemSlots; i++) {
-        s32 itemID = itemArray[i];
+        s32 itemID = (itemArray != NULL) ? itemArray[i] : *get_inventory_slot(i);
         if (itemID == ITEM_NONE) {
             continue;
         }
@@ -592,8 +592,8 @@ API_CALLABLE(ShowShopOwnerDialog) {
             }
             shop_close_item_select_popup();
             if (shop->selectedStoreItemSlot >= 0) {
-                ItemData* itemData = &gItemTable[gPlayerData.invItems[shop->selectedStoreItemSlot]];
-                script->functionTemp[1] = shop_owner_buy_dialog(SHOP_MSG_SELL_CONFIRM, itemData->nameMsg, shop_get_sell_price(gPlayerData.invItems[shop->selectedStoreItemSlot]), -1);
+                ItemData* itemData = &gItemTable[*get_inventory_slot(shop->selectedStoreItemSlot)];
+                script->functionTemp[1] = shop_owner_buy_dialog(SHOP_MSG_SELL_CONFIRM, itemData->nameMsg, shop_get_sell_price(*get_inventory_slot(shop->selectedStoreItemSlot)), -1);
                 show_coin_counter();
                 script->functionTemp[0] = DIALOG_STATE_AWAIT_SELL_CONFIRM;
             } else {
@@ -611,8 +611,8 @@ API_CALLABLE(ShowShopOwnerDialog) {
         case DIALOG_STATE_HANDLE_SELL_CHOICE:
             if (script->functionTemp[2] == 1) {
                 if (ShopOwnerPrintState->curOption == 0) {
-                    add_coins(shop_get_sell_price(gPlayerData.invItems[shop->selectedStoreItemSlot]));
-                    gPlayerData.invItems[shop->selectedStoreItemSlot] = ITEM_NONE;
+                    add_coins(shop_get_sell_price(*get_inventory_slot(shop->selectedStoreItemSlot)));
+                    *get_inventory_slot(shop->selectedStoreItemSlot) = ITEM_NONE;
                     if (get_consumables_count() == 0) {
                         script->functionTemp[1] = shop_owner_reset_speech(SHOP_MSG_SELL_THANKS);
                         script->functionTemp[0] = DIALOG_STATE_CLOSED_SUBMENU;
@@ -667,8 +667,8 @@ API_CALLABLE(ShowShopOwnerDialog) {
             }
             shop_close_item_select_popup();
             if (shop->selectedStoreItemSlot >= 0) {
-                if (store_item(gPlayerData.invItems[shop->selectedStoreItemSlot]) >= 0) {
-                    gPlayerData.invItems[shop->selectedStoreItemSlot] = ITEM_NONE;
+                if (store_item(*get_inventory_slot(shop->selectedStoreItemSlot)) >= 0) {
+                    *get_inventory_slot(shop->selectedStoreItemSlot) = ITEM_NONE;
                 }
 
                 if ((get_consumables_count() == 0) || (get_stored_empty() == 0)) {

@@ -2,6 +2,7 @@
 #include "battle/battle.h"
 #include "battle/battle_menu.h"
 #include "battle/action_cmd.h"
+#include "inventory.h"
 
 #include "sprite/player.h"
 
@@ -568,14 +569,14 @@ void btl_state_update_player_menu(void) {
                     battleStatus->submenuMoves[0] = MOVE_ITEMS;
                     battleStatus->submenuIcons[0] = ITEM_PARTNER_ATTACK;
                     battleStatus->submenuStatus[0] = 1;
-                    for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-                        if (playerData->invItems[i] == ITEM_NONE) {
+                    for (i = 0; i < get_inventory_capacity(); i++) {
+                        if ((*get_inventory_slot(i)) == ITEM_NONE) {
                             continue;
                         }
-                        itemData = &gItemTable[playerData->invItems[i]];
+                        itemData = &gItemTable[(*get_inventory_slot(i))];
 
                         battleStatus->moveCategory = BTL_MENU_TYPE_ITEMS;
-                        battleStatus->moveArgument = playerData->invItems[i];
+                        battleStatus->moveArgument = (*get_inventory_slot(i));
                         battleStatus->curTargetListFlags = itemData->targetFlags;
                         create_current_pos_target_list(playerActor);
                     }
@@ -979,21 +980,21 @@ void btl_state_update_player_menu(void) {
                 battleStatus->itemUsesLeft = 3;
             }
             entryIdx = 0;
-            for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-                if (playerData->invItems[i] == ITEM_NONE) {
+            for (i = 0; i < get_inventory_capacity(); i++) {
+                if ((*get_inventory_slot(i)) == ITEM_NONE) {
                     continue;
                 }
-                itemData = &gItemTable[playerData->invItems[i]];
+                itemData = &gItemTable[(*get_inventory_slot(i))];
                 hudScriptPair = &gItemHudScripts[itemData->hudElemID];
                 if (!(itemData->typeFlags & ITEM_TYPE_FLAG_BATTLE_USABLE)) {
                     continue;
                 }
                 battleStatus->moveCategory = BTL_MENU_TYPE_ITEMS;
-                battleStatus->moveArgument = playerData->invItems[i];
+                battleStatus->moveArgument = (*get_inventory_slot(i));
                 battleStatus->curTargetListFlags = itemData->targetFlags;
                 create_current_pos_target_list(playerActor);
                 popup->ptrIcon[entryIdx] = hudScriptPair->enabled;
-                popup->userIndex[entryIdx] = playerData->invItems[i];
+                popup->userIndex[entryIdx] = (*get_inventory_slot(i));
                 popup->enabled[entryIdx] = true;
                 popup->nameMsg[entryIdx] = itemData->nameMsg;
                 popup->descMsg[entryIdx] = itemData->shortDescMsg;
@@ -1087,22 +1088,22 @@ void btl_state_update_player_menu(void) {
             break;
         case BTL_SUBSTATE_ITEMS_BUILD_MENU:
             entryIdx = 0;
-            for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-                if (playerData->invItems[i] == ITEM_NONE) {
+            for (i = 0; i < get_inventory_capacity(); i++) {
+                if ((*get_inventory_slot(i)) == ITEM_NONE) {
                     continue;
                 }
-                itemData = &gItemTable[playerData->invItems[i]];
+                itemData = &gItemTable[(*get_inventory_slot(i))];
                 hudScriptPair = &gItemHudScripts[itemData->hudElemID];
                 if (!(itemData->typeFlags & ITEM_TYPE_FLAG_BATTLE_USABLE)) {
                     continue;
                 }
                 battleStatus->moveCategory = BTL_MENU_TYPE_ITEMS;
-                battleStatus->moveArgument = playerData->invItems[i];
+                battleStatus->moveArgument = (*get_inventory_slot(i));
                 battleStatus->curTargetListFlags = itemData->targetFlags;
                 create_current_pos_target_list(playerActor);
                 popup->ptrIcon[entryIdx] = hudScriptPair->enabled;
 
-                popup->userIndex[entryIdx] = playerData->invItems[i];
+                popup->userIndex[entryIdx] = (*get_inventory_slot(i));
                 popup->enabled[entryIdx] = true;
                 popup->nameMsg[entryIdx] = itemData->nameMsg;
                 popup->descMsg[entryIdx] = itemData->shortDescMsg;
@@ -1296,22 +1297,22 @@ void btl_state_update_player_menu(void) {
                 btl_set_state(BATTLE_STATE_END_PLAYER_TURN);
             } else {
                 entryIdx = 0;
-                for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-                    if (playerData->invItems[i] == ITEM_NONE) {
+                for (i = 0; i < get_inventory_capacity(); i++) {
+                    if ((*get_inventory_slot(i)) == ITEM_NONE) {
                         continue;
                     }
-                    itemData = &gItemTable[playerData->invItems[i]];
+                    itemData = &gItemTable[(*get_inventory_slot(i))];
                     hudScriptPair = &gItemHudScripts[itemData->hudElemID];
                     if (!(itemData->typeFlags & ITEM_TYPE_FLAG_BATTLE_USABLE)) {
                         continue;
                     }
 
                     battleStatus->moveCategory = BTL_MENU_TYPE_ITEMS;
-                    battleStatus->moveArgument = playerData->invItems[i];
+                    battleStatus->moveArgument = (*get_inventory_slot(i));
                     battleStatus->curTargetListFlags = itemData->targetFlags;
                     create_current_pos_target_list(playerActor);
                     popup->ptrIcon[entryIdx] = hudScriptPair->enabled;
-                    popup->userIndex[entryIdx] = playerData->invItems[i];
+                    popup->userIndex[entryIdx] = (*get_inventory_slot(i));
                     popup->enabled[entryIdx] = true;
                     popup->nameMsg[entryIdx] = itemData->nameMsg;
                     popup->descMsg[entryIdx] = itemData->shortDescMsg;

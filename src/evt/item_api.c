@@ -114,8 +114,8 @@ API_CALLABLE(ShowConsumableChoicePopup) {
 
             gOverrideFlags |= GLOBAL_OVERRIDES_40;
 
-            for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-                s16 invItem = playerData->invItems[i];
+            for (i = 0; i < get_inventory_capacity(); i++) {
+                s16 invItem = *get_inventory_slot(i);
 
                 if (invItem != ITEM_NONE) {
                     s32 found = false;
@@ -130,7 +130,7 @@ API_CALLABLE(ShowConsumableChoicePopup) {
                     }
 
                     if (found) {
-                        ItemData* item = &gItemTable[playerData->invItems[i]];
+                        ItemData* item = &gItemTable[*get_inventory_slot(i)];
 
                         menu->ptrIcon[numEntries] = gItemHudScripts[item->hudElemID].enabled;
                         menu->userIndex[numEntries] = i;
@@ -171,7 +171,7 @@ API_CALLABLE(ShowConsumableChoicePopup) {
                 } else {
                     s32 invIdx = menu->userIndex[script->functionTemp[2] - 1];
                     script->varTable[1] = invIdx;
-                    script->varTable[0] = playerData->invItems[invIdx];
+                    script->varTable[0] = *get_inventory_slot(invIdx);
                 }
                 return ApiStatus_DONE1;
             }
@@ -184,7 +184,7 @@ API_CALLABLE(RemoveItemAt) {
     Bytecode* args = script->ptrReadPos;
     s32 index = evt_get_variable(script, *args++);
 
-    gPlayerData.invItems[index] = ITEM_NONE;
+    *get_inventory_slot(index) = ITEM_NONE;
     sort_consumables();
     return ApiStatus_DONE2;
 }

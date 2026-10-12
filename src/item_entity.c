@@ -2130,14 +2130,14 @@ void update_item_entity_pickup(ItemEntity* item) {
 
             if (!(item->flags & ITEM_ENTITY_FLAG_2000000)) {
                 if (gItemTable[item->itemID].typeFlags & ITEM_TYPE_FLAG_CONSUMABLE) {
-                    for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-                        if (playerData->invItems[i] == ITEM_NONE) {
+                    for (i = 0; i < get_inventory_capacity(); i++) {
+                        if (*get_inventory_slot(i) == ITEM_NONE) {
                             break;
                         }
                     }
 
-                    if (i < ARRAY_COUNT(playerData->invItems)) {
-                        playerData->invItems[i] = item->itemID;
+                    if (i < get_inventory_capacity()) {
+                        *get_inventory_slot(i) = item->itemID;
                     } else {
                         item->state = ITEM_PICKUP_STATE_SHOW_TOO_MANY;
                         goto block_47; // TODO required to match
@@ -2358,11 +2358,11 @@ block_47: // TODO required to match
                 menu->descMsg[numEntries] = itemData->shortDescMsg;
                 numEntries++;
                 // add player inventory to menu
-                for (i = 0; i < ARRAY_COUNT(playerData->invItems); i++) {
-                    if (playerData->invItems[i] != ITEM_NONE) {
-                        itemData = &gItemTable[playerData->invItems[i]];
+                for (i = 0; i < get_inventory_capacity(); i++) {
+                    if (*get_inventory_slot(i) != ITEM_NONE) {
+                        itemData = &gItemTable[*get_inventory_slot(i)];
                         menu->ptrIcon[numEntries] = gItemHudScripts[itemData->hudElemID].enabled;
-                        menu->userIndex[numEntries] = playerData->invItems[i];
+                        menu->userIndex[numEntries] = *get_inventory_slot(i);
                         menu->enabled[numEntries] = true;
                         menu->nameMsg[numEntries] = itemData->nameMsg;
                         menu->descMsg[numEntries] = itemData->shortDescMsg;
@@ -2414,7 +2414,7 @@ block_47: // TODO required to match
                 )->renderGroup = -1;
 
                 if (ThrowAwayMenuIdx >= 2) {
-                    playerData->invItems[ThrowAwayMenuIdx - 2] = ITEM_NONE;
+                    *get_inventory_slot(ThrowAwayMenuIdx - 2) = ITEM_NONE;
                     sort_consumables();
                     add_item(item->itemID);
                 }
