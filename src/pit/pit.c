@@ -7,6 +7,7 @@
 
 extern AreaConfig gAreas[];
 extern MapSettings pit_room_settings;
+extern MapSettings pit_rest_settings;
 
 #define PIT_MAX_TIK_MAPS 48
 
@@ -14,6 +15,7 @@ extern MapSettings pit_room_settings;
 static MapConfig sTikMaps[PIT_MAX_TIK_MAPS];
 static s32 sPitAreaIndex = -1;
 static s32 sPitRoomIndex = -1;
+static s32 sPitRestIndex = -1;
 static volatile s32 sPitEnterRequested = 0;
 
 // A Pit room is a copy of the tik_18 entry (so its shape, collision and textures load)
@@ -38,7 +40,7 @@ static b32 pit_install_rooms(void) {
     }
 
     count = gAreas[i].mapCount;
-    if (count + 1 > PIT_MAX_TIK_MAPS) {
+    if (count + 2 > PIT_MAX_TIK_MAPS) {
         return false;
     }
 
@@ -55,11 +57,14 @@ static b32 pit_install_rooms(void) {
 
     sTikMaps[count] = sTikMaps[tik18];
     sTikMaps[count].settings = &pit_room_settings;
+    sTikMaps[count + 1] = sTikMaps[tik18];
+    sTikMaps[count + 1].settings = &pit_rest_settings;
 
     gAreas[i].maps = sTikMaps;
-    gAreas[i].mapCount = count + 1;
+    gAreas[i].mapCount = count + 2;
     sPitAreaIndex = i;
     sPitRoomIndex = count;
+    sPitRestIndex = count + 1;
     return true;
 }
 
@@ -158,7 +163,7 @@ void pit_poll(void) {
     }
 
     gGameStatusPtr->areaID = sPitAreaIndex;
-    gGameStatusPtr->mapID = sPitRoomIndex;
+    gGameStatusPtr->mapID = (sPitFloor % 10 == 0) ? sPitRestIndex : sPitRoomIndex;
     gGameStatusPtr->entryID = 0;
     set_map_transition_effect(TRANSITION_STANDARD);
     set_game_mode(GAME_MODE_CHANGE_MAP);
