@@ -7,6 +7,8 @@
 #include "sprite/npc/WorldWatt.h"
 #include "port/patches/Patches.h"
 #include "rare_enemy.h"
+#include "holofoil_hero.h"
+#include "inventory.h"
 
 s16 gNpcCount;
 static NpcList gWorldNpcList;
@@ -1433,6 +1435,20 @@ void rare_battle_tint_begin(ActorPart* part) {
 
     rare_tint_color(0, &r, &g, &b);
     rare_tint_begin(r, g, b);
+}
+
+// Holofoil Hero: Mario shines like a rare enemy while the badge is equipped (see spr_draw_player_sprite).
+// Returns true if the tint started. The caller draws Mario and then calls rare_tint_end().
+int holofoil_hero_tint_begin(void) {
+    s32 r, g, b;
+
+    if (!is_badge_equipped(HOLOFOIL_HERO_ITEM)) {
+        return false;
+    }
+
+    rare_tint_color(0, &r, &g, &b);
+    rare_tint_begin(r, g, b);
+    return true;
 }
 
 void npc_render_without_adjusted_palettes(Npc* npc, s32 arg1, Matrix4f mtx) {

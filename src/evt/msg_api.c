@@ -44,7 +44,7 @@ s32 _show_message(Evt* script, s32 isInitialCall, s32 mode) {
     f32* listenerYaw;
     s32 speakerNpcID;
     s32 targetNpcID;
-    s32 msgID;
+    intptr_t msgID; // can be a pointer to a message in memory, so it must not be 32 bit
     s32 animID;
 
     targetNpc = nullptr;

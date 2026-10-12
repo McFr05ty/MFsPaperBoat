@@ -14,6 +14,11 @@
 // A Pit room borrows the geometry of tik_18 (see pit.c) and runs its own script.
 extern EvtScript tik_18_EVS_SetupMusic;
 extern EvtScript tik_18_EVS_SetupDrips;
+extern EvtScript pit_sign_EVS_ReadSign; // src/pit/pit_sign.c
+
+// The Mover (src/pit/pit_mover.c): pit_mover_Roll sets LVar0 to true when he is on this floor.
+API_CALLABLE(pit_mover_Roll);
+extern NpcGroupList pit_mover_NPCs;
 
 enum {
     NPC_Gloomba = 0,
@@ -22,31 +27,6 @@ enum {
 EntryList N(Entrances) = {
     [0] { 60.0, 140.0, 7.0, 90.0 },  // where Mario drops in
     [1] { 60.0, -10.0, 7.0, 90.0 },  // the progress pipe (centre of the room)
-};
-
-// Debug: hides the model chosen with the Pit menu slider (-1 = none), so we can find models by eye.
-API_CALLABLE(N(GetDebugHideModel)) {
-    evt_set_variable(script, LVar0, CVarGetInteger(CVAR_PIT_DEBUG_HIDE_MODEL, -1));
-    return ApiStatus_DONE2;
-}
-
-EvtScript N(EVS_DebugModels) = {
-    Set(LVar9, -1)
-    Label(0)
-        Call(N(GetDebugHideModel))
-        IfNe(LVar0, LVar9)
-            IfGe(LVar9, 0)
-                Call(EnableModel, LVar9, true)
-            EndIf
-            IfGe(LVar0, 0)
-                Call(EnableModel, LVar0, false)
-            EndIf
-            Set(LVar9, LVar0)
-        EndIf
-        Wait(1)
-        Goto(0)
-    Return
-    End
 };
 
 // Enemies defeated earlier in this same map would not spawn again, so forget them on room entry.
@@ -82,12 +62,15 @@ EvtScript N(EVS_NpcDefeat_Gloomba) = {
     End
 };
 
-// Chooses the battle for this floor, using that battle's own arena (stage -1).
+// The battle chosen for this floor (see PrepareEnemy below).
+static s32 sFloorBattle;
+
+// Gives the enemy this floor's battle, using that battle's own arena (stage -1).
 API_CALLABLE(N(PickBattle)) {
     Enemy* enemy = script->owner1.enemy;
     Encounter* encounter = gCurrentEncounter.encounterList[enemy->encounterIndex];
 
-    encounter->battle = pit_pick_battle();
+    encounter->battle = sFloorBattle;
     encounter->stage = -1;
     return ApiStatus_DONE2;
 }
@@ -127,6 +110,24 @@ NpcGroupList N(DefaultNPCs) = {
     {}
 };
 
+// Picks this floor's battle, then makes the overworld enemy look like the first enemy of that battle.
+// This must run before the NPC is made. The NPC data below keeps the Gloomba look if the battle has no usable enemy.
+API_CALLABLE(N(PrepareEnemy)) {
+    int anims[16];
+    int height;
+    int radius;
+    int level;
+
+    sFloorBattle = pit_pick_battle();
+    if (pit_enemy_look(sFloorBattle, anims, &height, &radius, &level)) {
+        memcpy(&N(NpcData_Gloomba).animations, anims, sizeof(N(NpcData_Gloomba).animations));
+        N(NpcSettings_Gloomba_Wander).height = height;
+        N(NpcSettings_Gloomba_Wander).radius = radius;
+        N(NpcSettings_Gloomba_Wander).level = level;
+    }
+    return ApiStatus_DONE2;
+}
+
 // Mario goes down the pipe: ask for the next room (for now, the same one again).
 EvtScript N(EVS_PipeExit) = {
     Call(N(RequestNextRoom))
@@ -143,14 +144,24 @@ EvtScript N(EVS_Main) = {
     Exec(tik_18_EVS_SetupMusic)
     Call(PlaySound, SOUND_LOOP_TIK18_WATER)
     // The doorways stay as archways. Their colliders are solid and their exit triggers are never bound.
-    Exec(N(EVS_DebugModels))
     // The pipe starts hidden and rises when the flag is set by the defeat script.
     Set(GF_Unused_EVT_0A, false)
     Call(N(ClearDefeatedFlags))
-    Call(MakeNpcs, true, Ref(N(DefaultNPCs)))
+    // Now and then the Mover is here instead of the enemy. With nothing to fight, the pipe is up from the start.
+    Call(pit_mover_Roll)
+    IfEq(LVar0, true)
+        Set(GF_Unused_EVT_0A, true)
+        Call(MakeNpcs, true, Ref(pit_mover_NPCs))
+    Else
+        Call(N(PrepareEnemy))
+        Call(MakeNpcs, true, Ref(N(DefaultNPCs)))
+    EndIf
     Call(MakeEntity, Ref(Entity_BlueWarpPipe), 60, -10, 7, 0,
         1, Ref(N(EVS_PipeExit)),
         EVT_INDEX_OF_GAME_FLAG(GF_Unused_EVT_0A), MAKE_ENTITY_END)
+    // The floor sign, off to the side so it stays out of the way.
+    Call(MakeEntity, Ref(Entity_Signpost), 20, -10, -30, 0, MAKE_ENTITY_END)
+    Call(AssignScript, Ref(pit_sign_EVS_ReadSign))
     // Mario drops in above the centre of the room.
     Call(SetPlayerPos, 60, 140, 7)
     Call(TeleportPartnerToPlayer)

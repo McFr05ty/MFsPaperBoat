@@ -3,6 +3,7 @@
 #include "port/Engine.h"
 #include "port/patches/Patches.h"
 #include "port/hooks/Events.h"
+#include "holofoil_hero.h"
 
 // perhaps extend to 0x200 and change animID fields for dx from SSSSPPAA --> SSSPPAAA
 #define MAX_SPRITE_ID 0xFF
@@ -881,7 +882,7 @@ s32 spr_update_player_sprite(s32 spriteInstanceID, s32 animID, f32 timeScale) {
     return CurPlayerAnimInfo[instanceIdx].notifyValue;
 }
 
-s32 spr_draw_player_sprite(s32 spriteInstanceID, s32 yaw, s32 alphaIn, PAL_PTR* paletteList, Matrix4f mtx) {
+static s32 spr_draw_player_sprite_untinted(s32 spriteInstanceID, s32 yaw, s32 alphaIn, PAL_PTR* paletteList, Matrix4f mtx) {
     SpriteAnimData* spriteData;
     SpriteComponent** compList;
     SpriteAnimComponent** animList;
@@ -968,6 +969,25 @@ s32 spr_draw_player_sprite(s32 spriteInstanceID, s32 yaw, s32 alphaIn, PAL_PTR* 
     port_end_palette_override(); // [port]
 
     return true;
+}
+
+// Holofoil Hero: while the badge is equipped, Mario's own sprite is drawn under the rare enemy tint. This covers the
+// overworld and battles. Translucent or recolored draws (hit flashes, status effects) are left alone, as with rare enemies.
+s32 spr_draw_player_sprite(s32 spriteInstanceID, s32 yaw, s32 alphaIn, PAL_PTR* paletteList, Matrix4f mtx) {
+    b32 tinted = false;
+    s32 result;
+
+    if ((spriteInstanceID & 0xFF) == PLAYER_SPRITE_MAIN
+        && !(spriteInstanceID & (DRAW_SPRITE_OVERRIDE_ALPHA | DRAW_SPRITE_OVERRIDE_PALETTES))) {
+        tinted = holofoil_hero_tint_begin();
+    }
+
+    result = spr_draw_player_sprite_untinted(spriteInstanceID, yaw, alphaIn, paletteList, mtx);
+
+    if (tinted) {
+        rare_tint_end();
+    }
+    return result;
 }
 
 s32 func_802DDEC4(s32 spriteIdx) {

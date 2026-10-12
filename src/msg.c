@@ -2,6 +2,7 @@
 #include "ld_addrs.h"
 #include "message_ids.h"
 #include "msg.h"
+#include "holofoil_hero.h"
 #include "sprite.h"
 
 #include "port/Engine.h"
@@ -1376,6 +1377,11 @@ void initialize_printer(MessagePrintState* printer, s32 arg1, s32 arg2) {
 static u8* load_msg_asset(u32 msgID) {
     u32 section = msgID >> 16;
     u32 index = msgID & 0xFFFF;
+    u8* custom = holofoil_hero_message(msgID); // the Holofoil Hero badge has its own text
+
+    if (custom != nullptr) {
+        return custom;
+    }
     return (u8*)LOAD_ASSET(gMsgSectionPaths[section][index]);
 }
 

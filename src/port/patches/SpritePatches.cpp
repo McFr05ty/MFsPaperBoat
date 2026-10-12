@@ -7,6 +7,7 @@
 #include "sprite.h"
 #include "sprite/player.h"
 #include "port/patches/Patches.h"
+#include "rare_enemy.h"
 
 extern "C" {
 
@@ -147,7 +148,7 @@ void port_appendGfx_shading_palette(
     CALL_EVENT(SpriteShadingPreDraw);
 
     gDPSetRenderMode(gMainGfxPos++, G_RM_PASS, renderMode);
-    gDPSetEnvColor(gMainGfxPos++, 100, 100, 100, 255);
+    rare_set_shading_env(); // Rare Enemies: normally gDPSetEnvColor(100, 100, 100, 255)
 
     if (alpha == 255) {
         gDPSetCombineMode(gMainGfxPos++, PM_CC_50, PM_CC_52);

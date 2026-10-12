@@ -155,27 +155,41 @@ void PaperboatMenu::AddMenuMFEnhancements() {
         )
         .Callback([](WidgetInfo& info) { pit_request_enter(); });
 
-        AddWidget(path, "Hide model (debug)", WIDGET_CVAR_SLIDER_INT)
-            .CVar(CVAR_PIT_DEBUG_HIDE_MODEL)
-            .Options(
-                IntSliderOptions()
-                    .Tooltip("Debug: hides one model of the Pit room by index (-1 = none) to find the door models.")
-                    .Min(-1)
-                    .Max(23)
-                    .DefaultValue(-1)
-                    .Format("Hide model: %d")
-            );
-
         AddWidget(path, "Start floor (debug)", WIDGET_CVAR_SLIDER_INT)
             .CVar(CVAR_PIT_START_FLOOR)
             .Options(
                 IntSliderOptions()
                     .Tooltip("Debug: the floor Enter Pit starts on. Floors 80 and up can show a single Anti Guy.")
                     .Min(1)
-                    .Max(99)
+                    .Max(100)
                     .DefaultValue(1)
                     .Format("Start floor: %d")
             );
+
+    AddWidget(path, "Shop chance", WIDGET_CVAR_SLIDER_INT)
+        .CVar(CVAR_PIT_SHOP_CHANCE)
+        .Options(
+            IntSliderOptions()
+                .Tooltip("Chance that a rest floor has Rip Cheato's shop. Rolled each time a floor loads.")
+                .Min(0)
+                .Max(100)
+                .DefaultValue(PIT_SHOP_DEFAULT_CHANCE)
+                .Format("Shop chance: %d%%")
+        );
+
+    AddWidget(path, "Mover chance", WIDGET_CVAR_SLIDER_INT)
+        .CVar(CVAR_PIT_MOVER_CHANCE)
+        .Options(
+            IntSliderOptions()
+                .Tooltip(
+                    "Chance that the Mover is on a floor (floors 1 to 90, battle floors included, where he replaces the enemy). "
+                    "Rolled each time a floor loads."
+                )
+                .Min(0)
+                .Max(PIT_MOVER_MAX_CHANCE)
+                .DefaultValue(PIT_MOVER_DEFAULT_CHANCE)
+                .Format("Mover chance: %d%%")
+        );
 }
 
 } // namespace PaperboatGui

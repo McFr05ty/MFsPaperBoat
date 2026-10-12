@@ -12,6 +12,8 @@ API_CALLABLE(N(StartPit)) {
     return ApiStatus_DONE2;
 }
 
+extern EvtScript pit_sign_EVS_ReadEntranceSign; // src/pit/pit_sign.c
+
 EvtScript N(EVS_PitPipeExit) = {
     Call(N(StartPit))
     Wait(100)
@@ -27,6 +29,9 @@ EvtScript N(EVS_MakeEntities) = {
     Call(MakeEntity, Ref(Entity_BlueWarpPipe), 175, -10, -65, 0,
         1, Ref(N(EVS_PitPipeExit)),
         EVT_INDEX_OF_GAME_FLAG(GF_TIK02_Defeated_Blooper), MAKE_ENTITY_END)
+    // The sign beside the entrance pipe: the Pit's name and the deepest floor reached.
+    Call(MakeEntity, Ref(Entity_Signpost), 125, -10, -60, 0, MAKE_ENTITY_END)
+    Call(AssignScript, Ref(pit_sign_EVS_ReadEntranceSign))
         // The save block and heart block next to the Pit entrance.
         Call(MakeEntity, Ref(Entity_SavePoint), 100, 50, -60, 0, MAKE_ENTITY_END)
         Call(MakeEntity, Ref(Entity_HeartBlock), 235, 50, -60, 0, MAKE_ENTITY_END)

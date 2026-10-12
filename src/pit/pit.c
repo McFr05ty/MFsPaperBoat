@@ -8,6 +8,7 @@
 extern AreaConfig gAreas[];
 extern MapSettings pit_room_settings;
 extern MapSettings pit_rest_settings;
+extern MapSettings pit_boss_settings;
 
 #define PIT_MAX_TIK_MAPS 48
 
@@ -16,7 +17,10 @@ static MapConfig sTikMaps[PIT_MAX_TIK_MAPS];
 static s32 sPitAreaIndex = -1;
 static s32 sPitRoomIndex = -1;
 static s32 sPitRestIndex = -1;
+static s32 sPitBossIndex = -1;
 static volatile s32 sPitEnterRequested = 0;
+// Runs that start on a later floor (the debug start floor) do not count towards the best floor.
+static s32 sPitRecordBest = 1;
 
 // A Pit room is a copy of the tik_18 entry (so its shape, collision and textures load)
 // that runs our own script. Name lookups still find the real tik_18 first.
@@ -25,6 +29,7 @@ static b32 pit_install_rooms(void) {
     s32 j;
     s32 count;
     s32 tik18 = -1;
+    s32 tik02 = -1;
 
     if (sPitRoomIndex >= 0) {
         return true;
@@ -40,7 +45,7 @@ static b32 pit_install_rooms(void) {
     }
 
     count = gAreas[i].mapCount;
-    if (count + 2 > PIT_MAX_TIK_MAPS) {
+    if (count + 3 > PIT_MAX_TIK_MAPS) {
         return false;
     }
 
@@ -48,10 +53,12 @@ static b32 pit_install_rooms(void) {
     for (j = 0; j < count; j++) {
         if (strcmp(sTikMaps[j].id, "tik_18") == 0) {
             tik18 = j;
-            break;
+        }
+        if (strcmp(sTikMaps[j].id, "tik_02") == 0) {
+            tik02 = j;
         }
     }
-    if (tik18 < 0) {
+    if (tik18 < 0 || tik02 < 0) {
         return false;
     }
 
@@ -59,12 +66,16 @@ static b32 pit_install_rooms(void) {
     sTikMaps[count].settings = &pit_room_settings;
     sTikMaps[count + 1] = sTikMaps[tik18];
     sTikMaps[count + 1].settings = &pit_rest_settings;
+    // The boss room is a copy of the Blooper room (tik_02).
+    sTikMaps[count + 2] = sTikMaps[tik02];
+    sTikMaps[count + 2].settings = &pit_boss_settings;
 
     gAreas[i].maps = sTikMaps;
-    gAreas[i].mapCount = count + 2;
+    gAreas[i].mapCount = count + 3;
     sPitAreaIndex = i;
     sPitRoomIndex = count;
     sPitRestIndex = count + 1;
+    sPitBossIndex = count + 2;
     return true;
 }
 
@@ -72,7 +83,8 @@ extern const s16 gPitBattleIDs[];
 extern const s16 gPitBattleScores[];
 extern const s32 gPitBattleCount;
 
-#define PIT_LAST_FLOOR 99
+#define PIT_LAST_FLOOR 100
+#define PIT_BOSS_FLOOR 100
 #define PIT_ANTI_GUY_FIRST_FLOOR 80
 #define PIT_ANTI_GUY_PERCENT 5
 #define PIT_ANTI_GUY_BATTLE 0x102C
@@ -93,12 +105,22 @@ void pit_request_enter(void) {
         start = PIT_LAST_FLOOR;
     }
     sPitFloor = start;
+    sPitRecordBest = (start == 1);
     sPitEnterRequested = 1;
 }
 
 void pit_request_next_floor(void) {
     if (sPitFloor < PIT_LAST_FLOOR) {
         sPitFloor++;
+    }
+    sPitEnterRequested = 1;
+}
+
+// The Mover: skips the given number of floors. Mario lands on the floor after the skipped ones, never on the boss floor.
+void pit_request_skip_floors(int count) {
+    sPitFloor += 1 + count;
+    if (sPitFloor > PIT_LAST_FLOOR - 1) {
+        sPitFloor = PIT_LAST_FLOOR - 1;
     }
     sPitEnterRequested = 1;
 }
@@ -162,8 +184,17 @@ void pit_poll(void) {
         return;
     }
 
+    if (sPitRecordBest) {
+        pit_record_floor(sPitFloor);
+    }
     gGameStatusPtr->areaID = sPitAreaIndex;
-    gGameStatusPtr->mapID = (sPitFloor % 10 == 0) ? sPitRestIndex : sPitRoomIndex;
+    if (sPitFloor == PIT_BOSS_FLOOR) {
+        gGameStatusPtr->mapID = sPitBossIndex;
+    } else if (sPitFloor % 10 == 0) {
+        gGameStatusPtr->mapID = sPitRestIndex;
+    } else {
+        gGameStatusPtr->mapID = sPitRoomIndex;
+    }
     gGameStatusPtr->entryID = 0;
     set_map_transition_effect(TRANSITION_STANDARD);
     set_game_mode(GAME_MODE_CHANGE_MAP);

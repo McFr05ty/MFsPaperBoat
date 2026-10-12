@@ -3,6 +3,7 @@
 extern ActorBlueprint A(blooper);
 extern ActorBlueprint A(electro_blooper);
 extern ActorBlueprint A(super_blooper);
+extern ActorBlueprint pit_electro_super_blooper; // Pit of Trials floor 100 boss, see src/pit/pit_boss_actor.c
 
 extern Stage A(tik_01);
 extern Stage A(tik_02);
@@ -24,10 +25,16 @@ Formation A(Formation_02) = {
     ACTOR_BY_POS(A(super_blooper), A(BlooperPos), 10),
 };
 
+// Pit of Trials floor 100: the Electro Super Blooper.
+Formation A(Formation_03) = {
+    ACTOR_BY_POS(pit_electro_super_blooper, A(BlooperPos), 10),
+};
+
 BattleList A(Formations) = {
     BATTLE(A(Formation_00), A(tik_01), "ゲッソー"),
     BATTLE(A(Formation_01), A(tik_01), "ビリビリゲッソー"),
     BATTLE(A(Formation_02), A(tik_01), "ビッグゲッソー　チビゲッソー"),
+    BATTLE(A(Formation_03), A(tik_01), "Electro Super Blooper"),
     {},
 };
 

@@ -13,6 +13,17 @@
 // A Pit rest room borrows the geometry of tik_18 (see pit.c) and runs its own script.
 extern EvtScript tik_18_EVS_SetupMusic;
 extern EvtScript tik_18_EVS_SetupDrips;
+extern EvtScript pit_sign_EVS_ReadSign; // src/pit/pit_sign.c
+
+// The shop (src/pit/pit_shop.c): pit_shop_Roll sets LVar0 to true when the shop is on this floor.
+API_CALLABLE(pit_shop_Roll);
+extern NpcGroupList pit_shop_NPCs;
+
+// The Mover (src/pit/pit_mover.c): pit_mover_Roll sets LVar0 to true when he is on this floor.
+// pit_mover_WithShopNPCs has both him and the shop, for when both are here.
+API_CALLABLE(pit_mover_Roll);
+extern NpcGroupList pit_mover_NPCs;
+extern NpcGroupList pit_mover_WithShopNPCs;
 
 EntryList N(Entrances) = {
     [0] { 60.0, 140.0, 7.0, 90.0 },   // where Mario drops in
@@ -45,10 +56,6 @@ EvtScript N(EVS_ReturnPipeExit) = {
 
 EvtScript N(EVS_OpenChest) = EVT_OPEN_CHEST(ITEM_JELLY_ULTRA, GF_Unused_EVT_0C);
 
-NpcGroupList N(DefaultNPCs) = {
-    {}
-};
-
 EvtScript N(EVS_Main) = {
     Set(GB_WorldLocation, LOCATION_TOAD_TOWN_TUNNELS)
     Call(SetSpriteShading, SHADING_TIK_18)
@@ -60,7 +67,22 @@ EvtScript N(EVS_Main) = {
     Set(GF_Unused_EVT_0A, true)
     Set(GF_Unused_EVT_0B, true)
     Set(GF_Unused_EVT_0C, false)
-    Call(MakeNpcs, true, Ref(N(DefaultNPCs)))
+    // The shop and the Mover each have their own chance (Pit menu sliders), so both can be here. The NPCs are made in one go.
+    Call(pit_shop_Roll)
+    Set(LVarA, LVar0)
+    Call(pit_mover_Roll)
+    Set(LVarB, LVar0)
+    IfEq(LVarA, true)
+        IfEq(LVarB, true)
+            Call(MakeNpcs, true, Ref(pit_mover_WithShopNPCs))
+        Else
+            Call(MakeNpcs, true, Ref(pit_shop_NPCs))
+        EndIf
+    Else
+        IfEq(LVarB, true)
+            Call(MakeNpcs, true, Ref(pit_mover_NPCs))
+        EndIf
+    EndIf
     Call(MakeEntity, Ref(Entity_BlueWarpPipe), 120, -10, 7, 0,
         1, Ref(N(EVS_ProgressPipeExit)),
         EVT_INDEX_OF_GAME_FLAG(GF_Unused_EVT_0A), MAKE_ENTITY_END)
@@ -70,6 +92,9 @@ EvtScript N(EVS_Main) = {
     Call(MakeEntity, Ref(Entity_Chest), -100, -10, 0, 0, 0, MAKE_ENTITY_END)
     Call(AssignChestFlag, GF_Unused_EVT_0C)
     Call(AssignScript, Ref(N(EVS_OpenChest)))
+    // The floor sign, off to the side so it stays out of the way.
+    Call(MakeEntity, Ref(Entity_Signpost), 20, -10, -30, 0, MAKE_ENTITY_END)
+    Call(AssignScript, Ref(pit_sign_EVS_ReadSign))
     // Mario drops in above the centre of the room.
     Call(SetPlayerPos, 60, 140, 7)
     Call(TeleportPartnerToPlayer)

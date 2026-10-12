@@ -34,11 +34,14 @@
 // Rare enemy tint: how much of the cycling rainbow is mixed in (0-100). Higher is more colorful and darker.
 #define RARE_TINT_STRENGTH 60
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 void rare_tint_begin(int r, int g, int b);
 void rare_tint_end(void);
+void rare_tint_reapply(void);
+void rare_set_shading_env(void);
 #ifdef __cplusplus
 }
 #endif

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "rare_enemy.h"
 #include "ld_addrs.h"
 #include "sprite.h"
 #include "imgfx.h"
@@ -1027,6 +1028,7 @@ void imgfx_appendGfx_mesh(ImgFXState* state, Matrix4f mtx) {
                 // color: texture
                 // alpha: texture
                 gDPSetCombineMode(gMainGfxPos++, G_CC_DECALRGBA, G_CC_DECALRGBA);
+                rare_tint_reapply(); // Rare Enemies: big sprites are drawn here, so the tint is applied again
                 break;
             case IMGFX_RENDER_OVERLAY_RGBA:
                 // color: texture
@@ -1613,7 +1615,7 @@ void imgfx_appendGfx_mesh_basic(ImgFXState* state, Matrix4f mtx) {
                         gDPSetRenderMode(gMainGfxPos++, G_RM_ZB_XLU_SURF, G_RM_ZB_XLU_SURF2);
                     }
 
-                    gDPSetEnvColor(gMainGfxPos++, 100, 100, 100, 255);
+                    rare_set_shading_env(); // Rare Enemies: normally gDPSetEnvColor(100, 100, 100, 255)
                     gDPSetPrimColor(gMainGfxPos++, 0, 0, 0, 0, 0, alpha2);
                     gDPSetCombineMode(gMainGfxPos++, PM_CC_5A, PM_CC_5A);
                     gDPSetColorDither(gMainGfxPos++, G_CD_MAGICSQ);

@@ -4,6 +4,7 @@
 #include "item_entity.h"
 #include "world/world.h"
 #include "assets/ui.h"
+#include "holofoil_hero.h"
 
 #if !VERSION_JP
 #define MSG_FullDesc_32 0
@@ -19,7 +20,7 @@
 #define MSG_ItemFullDesc_HustleDrink 0
 #define MSG_ItemFullDesc_InsecticideHerb 0
 #define MSG_ItemFullDesc_JumpCharge0 0
-#define MSG_ItemFullDesc_Kaiden 0
+#define MSG_ItemFullDesc_Kaiden HOLOFOIL_HERO_MSG_FULL
 #define MSG_ItemFullDesc_KootAltPhoto 0
 #define MSG_ItemFullDesc_KootShell 0
 #define MSG_ItemFullDesc_MegaHPDrain 0
@@ -59,7 +60,7 @@
 #define MSG_ItemName_HustleDrink 0
 #define MSG_ItemName_InsecticideHerb 0
 #define MSG_ItemName_JumpCharge0 0
-#define MSG_ItemName_Kaiden 0
+#define MSG_ItemName_Kaiden HOLOFOIL_HERO_MSG_NAME
 #define MSG_ItemName_KootAltPhoto 0
 #define MSG_ItemName_KootShell 0
 #define MSG_ItemName_MegaHPDrain 0
@@ -91,7 +92,7 @@
 #define MSG_ItemShortDesc_HustleDrink 0
 #define MSG_ItemShortDesc_InsecticideHerb 0
 #define MSG_ItemShortDesc_JumpCharge0 0
-#define MSG_ItemShortDesc_Kaiden 0
+#define MSG_ItemShortDesc_Kaiden HOLOFOIL_HERO_MSG_SHORT
 #define MSG_ItemShortDesc_KootAltPhoto 0
 #define MSG_ItemShortDesc_KootShell 0
 #define MSG_ItemShortDesc_MegaHPDrain 0
